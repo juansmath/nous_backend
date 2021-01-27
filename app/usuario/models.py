@@ -21,9 +21,9 @@ class UserManager(BaseUserManager):
         return self._create_user(username,email, password, True, True, **extra_fields)
 
 class User(AbstracBaseUser, PermissionMixin):
-    username = models.CharField(_("Usuario"), max_length=100, unique = True)
-    email = models.EmailField(_("Email"), max_length=150, unique = True)
-    image = models.ImageField(_("Imagen de perfil"), upload_to=None, max_length=200, null = True, blank = True)
+    username = models.CharField('Usuario', max_length=100, unique = True)
+    email = models.EmailField('Email', max_length=150, unique = True)
+    image = models.ImageField('Imagen de perfil', upload_to=None, max_length=200, null = True, blank = True)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
     objects = UserManager()
@@ -35,6 +35,6 @@ class User(AbstracBaseUser, PermissionMixin):
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
-    def __str__(self):
+    def __str_self):
         return f'{self.username}'
 
