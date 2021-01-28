@@ -9,7 +9,8 @@ https://docs.djangoproject.com/en/3.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.1/ref/settings/
 """
-
+import os
+from django.urls import reverse_lazy
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,19 +32,20 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
-    'base.apps.BaseConfig'
-    'docente.apps.DocenteConfig',
-    'estudiante.apps.EstudianteConfig',
-    'institucionl.apps.InstitucionalConfig',
-    'persona.apps.PersonaConfig',
-    'prueba.apps.PruebaConfig',
-    'usuario.apps.usuarioConfig',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'apps.base',
+    'apps.docente',
+    'apps.estudiante',
+    'apps.institucional',
+    'apps.persona',
+    'apps.prueba',
+    'apps.usuario',
 ]
 
 MIDDLEWARE = [
@@ -86,7 +88,8 @@ DATABASES = {
         'NAME': 'nous',
         'USER': 'juanse',
         'PASSWORD': 'nous_2021',
-        'HOST': 'localhost'
+        'HOST': 'localhost',
+        'PORT':'5432'
     }
 }
 

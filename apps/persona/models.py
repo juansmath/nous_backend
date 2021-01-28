@@ -1,6 +1,6 @@
 from django.db import models
-from app.base.models import BaseModel
-from app.usuario.models import User
+from apps.base.models import BaseModel
+from apps.usuario.models import User
 
 class Persona(BaseModel):
     GENERO = [
@@ -39,7 +39,7 @@ class Persona(BaseModel):
     class Meta:
         ordering = ['primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido']
         verbose_name = 'Persona'
-        vervose_name_plural = 'Personas'
+        verbose_name_plural = 'Personas'
 
     def __str__(self):
         return f'{self.primer_nombre} {self.segundo_nombre} {self.primer_apellido} {self.segundo_apellido}'

@@ -7,7 +7,7 @@ class BaseModel(models.Model):
     created_date = models.DateField('Fecha de creación', auto_now_add = True, auto_now = False)
     updated_date = models.DateField('Fecha de actualizacion', auto_now_add = False, auto_now = True)
     deleted_date = models.DateField('Fecha deeliminación', auto_now_add = False, auto_now = True)
-    
+
     class Meta:
         abstract = True
         verbose_name = 'Modelo Base'
