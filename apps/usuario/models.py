@@ -20,7 +20,7 @@ class UserManager(BaseUserManager):
     def create_superuser(self, username, email, password = None, **extra_fields):
         return self._create_user(username,email, password, True, True, **extra_fields)
 
-class User(AbstractBaseUser, PermissionsMixin):
+class Usuario(AbstractBaseUser, PermissionsMixin):
     username = models.CharField('Usuario', max_length=100, unique = True)
     email = models.EmailField('Email', max_length=150, unique = True)
     image = models.ImageField('Imagen de perfil', upload_to=None, max_length=200, null = True, blank = True)
@@ -29,6 +29,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     class Meta:
+        ordering = ['username']
         verbose_name = 'Usuario'
         verbose_name_plural = 'Usuarios'
 

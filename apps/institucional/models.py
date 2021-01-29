@@ -6,7 +6,7 @@ class Facultad(BaseModel):
     nombre_facultad = models.CharField('Nombre de la facultad', max_length = 100, null = False, blank = False)
 
     class Meta:
-        ordering = 'nombre_facultad'
+        ordering = ['nombre_facultad']
         verbose_name = 'Facultad'
         verbose_name_plural = 'Facultades'
 
@@ -21,7 +21,7 @@ class Programa(BaseModel):
     facultad = models.ForeignKey(Facultad, on_delete = models.CASCADE)
 
     class Meta:
-        ordering = 'nombre_programa'
+        ordering = ['nombre_programa']
         verbose_name = 'Programa'
         verbose_name_plural = 'Programas'
         # constraints = [
@@ -36,6 +36,6 @@ class NivelAcademico(BaseModel):
     nivel_academico = models.CharField('Nivel académico', max_length = 50, null = False, blank = False, unique = True)
 
     class Meta:
-        ordering = 'nivel_academico'
+        ordering = ['nivel_academico']
         verbose_name = 'Nivel academico'
         verbose_name_plural = 'Niveles académicos'

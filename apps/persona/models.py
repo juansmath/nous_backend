@@ -1,6 +1,6 @@
 from django.db import models
 from apps.base.models import BaseModel
-from apps.usuario.models import User
+from apps.usuario.models import Usuario
 
 class Persona(BaseModel):
     GENERO = [
@@ -29,12 +29,12 @@ class Persona(BaseModel):
     segundo_nombre = models.CharField('Segundo nombre', max_length=100, null = True, blank = True )
     primer_apellido = models.CharField('Primer apellido', max_length=100, null = False, blank = False)
     segundo_apellido = models.CharField('Segundo apellido', max_length = 100, null = True, blank = True)
-    genero = models.CharField('Genéro', max_length = 4, choices = GENERO)
+    genero = models.CharField('Genéro', choices = GENERO, max_length = 6)
     rh = models.CharField('Grupo sanguineo', max_length = 3, choices = GRUPO_SANGUINEO)
     estado_civil = models.CharField('Estado civil', max_length = 15, null = False, blank = False)
     telefono = models.CharField('Número de télefono', max_length = 10, null = False, blank = False, unique = True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null = False, blank = False)
-    id_usuario = models.OneToOneField(User, on_delete = models.CASCADE )
+    id_usuario = models.OneToOneField(Usuario, on_delete = models.CASCADE )
 
     class Meta:
         ordering = ['primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido']

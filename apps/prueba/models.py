@@ -7,7 +7,7 @@ class Modulo(BaseModel):
     estado = models.BooleanField('Estado del módulo', default = True)
 
     class Meta:
-        ordering = 'nombre_modulo'
+        ordering = ['nombre_modulo']
         verbose_name = 'Modulo'
         verbose_name_plural = 'Modulos'
 
@@ -20,11 +20,82 @@ class Competencia(BaseModel):
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
 
     class Meta:
-        ordering = 'nombre_competencia'
+        ordering = ['nombre_competencia']
         verbose_name = 'Competencia'
         verbose_name_plural = 'Competencias'
 
     def __str__(self):
         return self.nombre_competencia
+
+class GrupoPregunta(BaseModel):
+    enunciado_general = models.TextField('Nombre del grupo de preguntas', null = False, blank = False)
+    cantidad_max_pregutas = models.IntegerField('Cantidad maxíma de preguntas', null = False, blank = False, unique = True)
+
+    class Meta:
+        ordering = ['enunciado_general']
+        verbose_name = 'GrupoPregunta'
+        verbose_name_plural = 'GrupoPregusntas'
+
+    def __str__(self):
+        return self.enunciado_general
+
+class OpcionRespuesta(BaseModel):
+    letra_opcion = models.CharField('nombre de la opcion', max_length = 1, null = False, blank = False, unique = True)
+
+    class Meta:
+        ordering = ['letra_opcion']
+        verbose_name = 'OpcionRespuesta'
+        verbose_name_plural = 'OpcionesRespuesta'
+
+    def __str__(self):
+        return self.letra_opcion
+
+class OpcionEnunciado(BaseModel):
+    LETRAS_OPCION = [
+        ('A','A'),
+        ('B','B'),
+        ('C','C'),
+        ('D','D'),
+        ('E','E'),
+        ('F','F'),
+        ('G','G'),
+        ('H','H'),
+        ('I','I')
+    ]
+    contenido_opcion = models.CharField('Contenido de la opción', max_length = 250, null = False, blank = False, unique = True)
+    letra = models.CharField('Letra', max_length = 1, choices = LETRAS_OPCION, unique = True, null = False, blank = False)
+
+class Justificacion(BaseModel):
+    afirmacion = models.CharField('Afirmación', max_length = 250, null = False, blank = False)
+    evidencia = models.CharField('Evidencia', max_length = 250, null = False, blank = False)
+    justificacion = models.TextField('Justificacion de la pregunta', null = False, blank = False)
+    solucion = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
+
+    class Meta:
+        verbose_name = 'Justificación'
+        verbose_name_plural = 'Justificaciones'
+
+class Pregunta(BaseModel):
+    enunciado = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)
+    grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    opcion = models.ForeignKey(OpcionEnunciado, on_delete = models.CASCADE)
+    respuesta = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
+    justificacion = models.OneToOneField(Justificacion, on_delete = models.CASCADE)
+
+class BancoPregunta(BaseModel):
+    nombre_banco = models.CharField('Nombre del banco de preguntas', max_length = 100, null = False, blank = False)
+    modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
+    competencia = models.ManyToManyField(Competencia)
+    pregunta = models.ManyToManyField(Pregunta)
+    grupo = models.ManyToManyField(GrupoPregunta)
+
+    class Meta:
+        ordering = ['nombre_banco']
+        managed = True
+        verbose_name = 'BancoPregunta'
+        verbose_name_plural = 'BancoPreguntas'
+
+    def __str__(self):
+        return self.nombre_banco
 
 
