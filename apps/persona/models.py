@@ -34,7 +34,7 @@ class Persona(BaseModel):
     estado_civil = models.CharField('Estado civil', max_length = 15, null = False, blank = False)
     telefono = models.CharField('Número de télefono', max_length = 10, null = False, blank = False, unique = True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null = False, blank = False)
-    id_usuario = models.OneToOneField(Usuario, on_delete = models.CASCADE )
+    usuario_id = models.OneToOneField(Usuario, on_delete = models.CASCADE )
 
     class Meta:
         ordering = ['primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido']
