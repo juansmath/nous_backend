@@ -20,14 +20,13 @@ class ProgramaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
     def to_representation(self, instance):
-        facultad = Facultad.objects.filter(id_referencia = instance.id, estado = True)
         return {
             'data':{
                 'id': instance.id,
                 'codigo_programa': instance.codigo_programa,
                 'nombre_programa': instance.nombre_programa,
                 'creditos': instance.creditos,
-                'semestres': instance.semestres
+                'semestres': instance.semestres,
+                'facultad': instance.facultad.id if instance.facultad.id is not None else ''
             },
-            'facultad': facultad.data
         }

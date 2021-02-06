@@ -4,7 +4,6 @@ from apps.base.models import BaseModel
 class Modulo(BaseModel):
     codigo_modulo = models.CharField('Código del módulo', max_length = 50, null = False, blank = False)
     nombre_modulo = models.CharField('Nombre del módulo', max_length = 100, null = False, blank = False)
-    estado = models.BooleanField('Estado del módulo', default = True)
 
     class Meta:
         ordering = ['nombre_modulo']
@@ -29,7 +28,7 @@ class Competencia(BaseModel):
 
 class GrupoPregunta(BaseModel):
     enunciado_general = models.TextField('Nombre del grupo de preguntas', null = False, blank = False)
-    cantidad_max_pregutas = models.IntegerField('Cantidad maxíma de preguntas', null = False, blank = False, unique = True)
+    cantidad_max_pregutas = models.IntegerField('Cantidad maxíma de preguntas', null = False, blank = False, unique = True, max_length = 10)
 
     class Meta:
         ordering = ['enunciado_general']

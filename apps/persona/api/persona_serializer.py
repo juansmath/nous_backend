@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
 from apps.persona.models import Persona
+from apps.usuario.models import Usuario
 
 class PersonaSerializer(serializers.ModelSerializer):
     GENERO = [
@@ -81,4 +82,26 @@ class PersonaDetalleSerializer(serializers.ModelSerializer):
             'telefono': instance.telefono,
             'fecha_nacimiento': instance.fecha_nacimiento,
             'usuario_id': instance.id_usuario
+        }
+
+class PersonaVistaPreviaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Persona
+        exclude = ('estado',)
+
+    def to_representation(self, instance):
+        return {
+            'info':{
+                'id': instance.id,
+                'identificacion': instance.identificacion,
+                'primer_nombre': instance.primer_nombre,
+                'segundo_nombre': instance.segundo_nombre if instance.segundo_nombre is not None else '',
+                'primer_apellido': instance.primer_apellido,
+                'segundo_apellido': instance.segundo_apellido if instance.segundo_apellido is not None else '',
+                'genero': instance.genero,
+                'rh': instance.rh,
+                'estado_civil': instance.estado_civil,
+                'telefono': instance.telefono,
+                'fecha_nacimiento': instance.fecha_nacimiento,
+            }
         }
