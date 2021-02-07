@@ -4,9 +4,9 @@ from django.db import models
 class BaseModel(models.Model):
     id = models.AutoField(primary_key = True)
     estado = models.BooleanField('Estado', default = True)
-    created_date = models.DateField('Fecha de creación', auto_now_add = True, auto_now = False)
-    updated_date = models.DateField('Fecha de actualizacion', auto_now_add = False, auto_now = True)
-    deleted_date = models.DateField('Fecha deeliminación', auto_now_add = False, auto_now = True)
+    fecha_creacion = models.DateField('Fecha de creación', auto_now_add = True, auto_now = False)
+    fecha_actualizacion = models.DateField('Fecha de actualizacion', auto_now_add = False, auto_now = True)
+    fecha_eliminacion = models.DateField('Fecha deeliminación', auto_now_add = False, auto_now = True)
 
     class Meta:
         abstract = True

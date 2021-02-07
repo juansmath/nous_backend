@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.prueba.models import Modulo, Competencia, GrupoPregunta, OpcionRespuesta, OpcionEnunciado, Justificacion, Pregunta, BancoPregunta
+from apps.prueba.models import Modulo, Competencia, GrupoPregunta, OpcionRespuesta, OpcionEnunciado, Justificacion, Pregunta, BancoPregunta, Prueba
 
 class ModuloSerializer(serializers.ModelSerializer):
     class Meta:
@@ -174,4 +174,84 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
                 'respuesta': instance.respuesta.id if instance.respuesta.id is not None else '',
                 'justificacion': instance.justificacion.id if instance.justificacion.id is not None else ''
             }
+        }
+
+class BancoPreguntaSerializer(serializers.ModelSerializer):
+    nombre_banco = serializers.CharField(max_length = 100)
+
+    def validate_nombre_banco(self, value):
+        if value == '':
+            raise serializers.ValidationError('El campo es obligatorio')
+        return value
+
+    class Meta:
+        model = BancoPregunta
+        exclude = ('estado',)
+
+class BancoPreguntaDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BancoPregunta
+        exclude = ('estado',)
+
+    def to_representation(self, instance):
+        competencias = Competencia.objects.filter(id_referencia = instance.id, estado = True)
+        competencias_serializer = CompetenciaSerializer(competencias, many = True)
+
+        preguntas = Pregunta.objects.filter(id_referencia = instance.id, estado = True)
+        preguntas_serializer = PreguntaSerializer(preguntas, many = True)
+
+        grupos_preguntas = GrupoPregunta.objects.filter(id_referencia = instance.id, estado = True)
+        grupos_preguntas_serializer = GrupoPreguntaSerializer(grupos_preguntas, many = True)
+
+        return {
+            'info':{
+                'id': instance.id,
+                'nombre': instance.nombre_banco,
+                'modulo': instance.modulo.id if instance.modulo.id is not None else ''
+            },
+            'competencias': competencias_serializer.data,
+            'preguntas': preguntas_serializer.data,
+            'grupos_preguntas': grupos_preguntas_serializer.data
+        }
+
+class PruebaSerializer(serializers.ModelSerializer):
+    nombre_prueba = serializers.CharField(max_length = 100)
+    numero_intentos = serializers.IntegerField(max_length = 1)
+
+    def validate_nombre_prueba(self, value):
+        if value == '':
+            raise serializers.ValidationError('El campo es obligatorio')
+        return value
+
+    def validate_limite_tiempo(self, value):
+        if value == '':
+            raise serializers.ValidationError('El campo es obligatorio')
+        return value
+
+    def validate_numero_intentos(self, value):
+        if value == '':
+            raise serializers.ValidationError('El campo es obligatorio')
+        return value
+
+    class Meta:
+        model = Prueba
+        exclude = ('estado',)
+
+class PruebaDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Prueba
+        exclude = ('estado')
+
+    def to_representation(self, instance):
+        banco_preguntas = BancoPregunta.objects.filter(id_referencia = isinstance.id, estado = True)
+        banco_preguntas_serializer = BancoPreguntaSerializer(banco_preguntas, many = True)
+
+        return {
+            'info':{
+                'id': instance.id,
+                'nombre_prueba': instance.nombre_prueba,
+                'numero_intentos': instance.numero_intentos,
+                'limite_tiempo': instance.limite_tiempo
+            },
+            'banco_preguntas': banco_preguntas_serializer.data
         }

@@ -1,5 +1,6 @@
 from django.db import models
 from apps.base.models import BaseModel
+from apps.estudiante.models import Estudiante, HojaRespuesta
 
 class Modulo(BaseModel):
     codigo_modulo = models.CharField('Código del módulo', max_length = 50, null = False, blank = False)
@@ -97,4 +98,31 @@ class BancoPregunta(BaseModel):
     def __str__(self):
         return self.nombre_banco
 
+class Prueba(BaseModel):
+    nombre_prueba = models.CharField('Nombre de la prueba', max_length = 100, null = False, blank = False, unique = True)
+    limite_tiempo = models.TimeField('Limite de tiempo para presentar la prueba')
+    numero_intentos = models.IntegerField(max_length = 1)
+    banco_preguntas = models.ManyToManyField(BancoPregunta)
+
+    class Meta:
+        ordering = ['nombre_prueba']
+        managed = True
+        verbose_name = 'Prueba'
+        verbose_name_plural = 'Pruebas'
+
+    def __str__(self):
+        return self.nombre_prueba
+
+class ResultadosPrueba(BaseModel):
+    estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
+    modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
+    prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
+    hoja_respuesta = models.ForeignKey(HojaRespuesta, on_delete = models.CASCADE)
+    calificacion = models.BooleanField('Calificación de la prueba', default = False, null = False, blank = False)
+
+    class Meta:
+        ordering = ['estudiante']
+        managed = True
+        verbose_name = 'Resultado Prueba'
+        verbose_name_plural = 'Resultados Prueba'
 
