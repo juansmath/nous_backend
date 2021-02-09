@@ -1,6 +1,10 @@
 from rest_framework import serializers
 
-from apps.prueba.models import Modulo, Competencia, GrupoPregunta, OpcionRespuesta, OpcionEnunciado, Justificacion, Pregunta, BancoPregunta, Prueba
+from apps.prueba.models import Modulo, Competencia, GrupoPregunta, OpcionRespuesta, OpcionEnunciado, Justificacion, Pregunta, BancoPregunta, Prueba, ResultadoPrueba
+from apps.estudiante.models import Estudiante, HojaRespuesta
+from apps.docente.models import Docente
+
+from apps.estudiante.api.serializers from Estudiante, HojaRespuesta
 
 class ModuloSerializer(serializers.ModelSerializer):
     class Meta:
@@ -198,10 +202,10 @@ class BancoPreguntaDetalleSerializer(serializers.ModelSerializer):
         competencias_serializer = CompetenciaSerializer(competencias, many = True)
 
         preguntas = Pregunta.objects.filter(id_referencia = instance.id, estado = True)
-        preguntas_serializer = PreguntaSerializer(preguntas, many = True)
+        preguntas_serializer = PreguntaDetalleSerializer(preguntas, many = True)
 
         grupos_preguntas = GrupoPregunta.objects.filter(id_referencia = instance.id, estado = True)
-        grupos_preguntas_serializer = GrupoPreguntaSerializer(grupos_preguntas, many = True)
+        grupos_preguntas_serializer = GrupoPreguntaDetalleSerializer(grupos_preguntas, many = True)
 
         return {
             'info':{
@@ -244,7 +248,7 @@ class PruebaDetalleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         banco_preguntas = BancoPregunta.objects.filter(id_referencia = isinstance.id, estado = True)
-        banco_preguntas_serializer = BancoPreguntaSerializer(banco_preguntas, many = True)
+        banco_preguntas_serializer = BancoPreguntaDetalleSerializer(banco_preguntas, many = True)
 
         return {
             'info':{
@@ -254,4 +258,34 @@ class PruebaDetalleSerializer(serializers.ModelSerializer):
                 'limite_tiempo': instance.limite_tiempo
             },
             'banco_preguntas': banco_preguntas_serializer.data
+        }
+
+class ResultaddoPruebaDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ResultadoPrueba
+        exclude = ('estado',)
+
+    def to_representation(self, instance):
+        # estudiante = Estudiante.objects.filter(id_referencia = instance.id, estado = True)
+        # estudiante_serializer = EstudianteSerializer(estudiante, many = True)
+
+        docente = Docente.objects.filter(id_referencia = instance.id, estado = True)
+        docente_serializer = DocenteSerializer(docente, many = True)
+
+        modulo = Modulo.objects.filter(id_referencia = instance.id, estado = True)
+        modulo_serializer = ModuloSerializer(modulo, many = True)
+
+        prueba = Prueba.objects.filter(id_referencia = instance.id, estado = True)
+        prueba_serializer = PruebaDetalleSerializer(prueba, many = True)
+
+        # hoja_respuesta = HojaRespuesta.objects.filter(id_referencia = instance.id, estado = True)
+        # hoja_respuesta_serializer
+
+        return {
+            'resultado_prueba':{
+                'calificacion':instance.calificacion,
+                # 'docente': docente_serializer.data,
+                'modulo': modulo_serializer.data,
+                'prueba': prueba_serializer.data
+            }
         }

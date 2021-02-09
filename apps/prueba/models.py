@@ -1,6 +1,7 @@
 from django.db import models
 from apps.base.models import BaseModel
 from apps.estudiante.models import Estudiante, HojaRespuesta
+from apps.docente.models import Docente
 
 class Modulo(BaseModel):
     codigo_modulo = models.CharField('Código del módulo', max_length = 50, null = False, blank = False)
@@ -113,8 +114,9 @@ class Prueba(BaseModel):
     def __str__(self):
         return self.nombre_prueba
 
-class ResultadosPrueba(BaseModel):
+class ResultadoPrueba(BaseModel):
     estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
+    docente = models.ForeignKey(Docente, on_delete = models.CASCADE)
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
     prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
     hoja_respuesta = models.ForeignKey(HojaRespuesta, on_delete = models.CASCADE)

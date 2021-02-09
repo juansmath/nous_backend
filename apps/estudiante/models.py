@@ -16,7 +16,7 @@ class Estudiante(BaseModel):
 class HojaRespuesta(BaseModel):
     prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
     grupo_preguntas = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
-    pregunta = models.ForeignKey(Pregunta)
+    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
     opcion_marcada = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
     estudainte = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
     tiempo_empleado = models.TimeField('Tiempo que empleo para responder la pregunta', null = False, blanck = True)
