@@ -4,36 +4,6 @@ from apps.persona.models import Persona
 from apps.usuario.models import Usuario
 
 class PersonaSerializer(serializers.ModelSerializer):
-    GENERO = [
-        ('F','FEMENINO'),
-        ('M','MASCULINO'),
-        ('LGTIB','LGTIB')
-    ]
-    ESTADO_CIVIL = [
-        ('SOLTERO','SOLTERO(A)'),
-        ('CASADO','CASADO'),
-        ('DIVORCIADO','DIVORCIADO(A)'),
-        ('VIUDO','VIUDO(A)'),
-        ('UNION_LIBRE','UNION_LIBRE')
-    ]
-    GRUPO_SANGUINEO = [
-        ('A+','A+'),
-        ('A-','A-'),
-        ('B+', 'B-'),
-        ('AB+','AB+'),
-        ('AB-','AB-'),
-        ('O+','O+'),
-        ('O-','O-')
-    ]
-    identificacion = serializers.IntegerField(max_length = 30)
-    primer_nombre = serializers.CharField(max_length = 100)
-    primer_apellido = serializers.CharField(max_length = 100)
-    genero = serializers.ChoiceField(choices = GENERO)
-    rh = serializers.CharField(choices = GRUPO_SANGUINEO)
-    estado_civil = serializers.ChoiceField(choices = ESTADO_CIVIL)
-    telefono = serializers.IntegerField(max_length = 9999999999)
-    fecha_nacimiento = serializers.DateField(format = '%Y-%m-%d')
-
     def validate_identificacion(self, value):
         if value is None or value == '':
             raise serializers.ValidationError('Identificación es obligatorio')

@@ -17,8 +17,6 @@ class CompetenciaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
 class GrupoPreguntaSerializer(serializers.ModelSerializer):
-    cantidad_max_preguntas = serializers.IntegerField(max_length = 10)
-
     def validate_unuciado_general(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
@@ -53,20 +51,6 @@ class OpcionRespuestaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
 class OpcionEnunciadoSerializer(serializers.ModelSerializer):
-    LETRAS_OPCION = [
-        ('A','A'),
-        ('B','B'),
-        ('C','C'),
-        ('D','D'),
-        ('E','E'),
-        ('F','F'),
-        ('G','G'),
-        ('H','H'),
-        ('I','I')
-    ]
-    contenido_opcion = serializers.CharField(max_length = 250)
-    letra = serializers.ChoiseField(choices = LETRAS_OPCION)
-
     def validate_contenido_opcion(self, value):
         if value == '':
             raise serializers.ValidationError('El campos es obligatorio')
@@ -96,9 +80,6 @@ class OpcionEnunciadoDetalleSerializer(serializers.ModelSerializer):
         }
 
 class JustificacionSerializer(serializers.ModelSerializer):
-    afirmacion = serializers.CharField(max_length = 250)
-    evidencia = serializers.CharField(max_length = 250)
-
     def validate_afirmacion(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
@@ -181,8 +162,6 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
         }
 
 class BancoPreguntaSerializer(serializers.ModelSerializer):
-    nombre_banco = serializers.CharField(max_length = 100)
-
     def validate_nombre_banco(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
@@ -219,9 +198,6 @@ class BancoPreguntaDetalleSerializer(serializers.ModelSerializer):
         }
 
 class PruebaSerializer(serializers.ModelSerializer):
-    nombre_prueba = serializers.CharField(max_length = 100)
-    numero_intentos = serializers.IntegerField(max_length = 1)
-
     def validate_nombre_prueba(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
