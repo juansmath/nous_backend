@@ -4,7 +4,7 @@ from apps.prueba.models import Modulo, Competencia, GrupoPregunta, OpcionRespues
 from apps.estudiante.models import Estudiante, HojaRespuesta
 from apps.docente.models import Docente
 
-from apps.estudiante.api.serializers from Estudiante, HojaRespuesta
+from apps.estudiante.api.serializers import Estudiante, HojaRespuesta
 
 class ModuloSerializer(serializers.ModelSerializer):
     class Meta:
@@ -266,26 +266,14 @@ class ResultaddoPruebaDetalleSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
     def to_representation(self, instance):
-        # estudiante = Estudiante.objects.filter(id_referencia = instance.id, estado = True)
-        # estudiante_serializer = EstudianteSerializer(estudiante, many = True)
-
-        docente = Docente.objects.filter(id_referencia = instance.id, estado = True)
-        docente_serializer = DocenteSerializer(docente, many = True)
-
-        modulo = Modulo.objects.filter(id_referencia = instance.id, estado = True)
-        modulo_serializer = ModuloSerializer(modulo, many = True)
-
-        prueba = Prueba.objects.filter(id_referencia = instance.id, estado = True)
-        prueba_serializer = PruebaDetalleSerializer(prueba, many = True)
-
-        # hoja_respuesta = HojaRespuesta.objects.filter(id_referencia = instance.id, estado = True)
-        # hoja_respuesta_serializer
-
         return {
             'resultado_prueba':{
+                'id': instance.id,
                 'calificacion':instance.calificacion,
-                # 'docente': docente_serializer.data,
-                'modulo': modulo_serializer.data,
-                'prueba': prueba_serializer.data
+                'estudiante': instance.estudiante.id if instance.estudiante.id is not None else '',
+                'docente': instance.docente.id if instance.docente.id is not None else '',
+                'modulo': instance.modulo.id if instance.modulo.id is not None else '',
+                'prueba': instance.prueba.id if instance.prueba.id is not None else '',
+                'hoja_respuesta': instance.hoja_respuesta.id if instance.hoja_respuesta.id is not None else ''
             }
         }

@@ -42,6 +42,7 @@ class HojaRespuestaDetalleSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         return {
             'hoja_respuesta':{
+                'id': instance.id,
                 'prueba': instance.prueba.id if instance.prueba.id is not None else '',
                 'grupo_preguntas': instance.grupo_preguntas.id if instance.grupo_preguntas.id is not None else '',
                 'pregunta': instance.pregunta.id if instance.pregunta.id is not None else '',
