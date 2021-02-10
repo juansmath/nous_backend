@@ -30,6 +30,14 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     historical = HistoricalRecords()
     objects = UserManager()
 
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user_.setter
+    def _history_user(self, value):
+        self.changed_by = value
+
     class Meta:
         ordering = ['username']
         verbose_name = 'Usuario'

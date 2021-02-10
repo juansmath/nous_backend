@@ -236,6 +236,36 @@ class PruebaDetalleSerializer(serializers.ModelSerializer):
             'banco_preguntas': banco_preguntas_serializer.data
         }
 
+class ResultadoPruebaSerializer(serializers.ModelSerializer):
+    def valdiate_estudiante(self, value):
+        if value == '':
+            raise serializers.ValidationError('Debe seleccionarse un estudiante')
+        return value
+
+        def validate_docente(self, value):
+            if value == '':
+                raise serializers.ValidationError('Debe seleccionar el docente a cargo')
+            return value
+
+        def validate_modulo(self, value):
+            if value == '':
+                raise serializers.ValidationError('Debe seleccionar un módulo')
+            return value
+
+        def validate_prueba(self, value):
+            if value == '':
+                raise serializers.ValidationError('Debe seleccionar un módulo')
+            return value
+
+        def valdiate_hoja_respuesta(self, value):
+            if value == '':
+                raise serializers.ValidationError('Debe seleccionar la hoja de respuestas')
+            return value
+
+        class Meta:
+            model = ResultadoPrueba
+            exclude = ('estado',)
+
 class ResultaddoPruebaDetalleSerializer(serializers.ModelSerializer):
     class Meta:
         model = ResultadoPrueba

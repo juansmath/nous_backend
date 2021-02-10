@@ -1,4 +1,6 @@
 from django.db import models
+from simple_history.models import HistoricalRecords
+
 from apps.base.models import BaseModel
 from apps.usuario.models import Usuario
 
@@ -35,6 +37,15 @@ class Persona(BaseModel):
     telefono = models.CharField('Número de télefono', max_length = 10, null = False, blank = False, unique = True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null = False, blank = False)
     usuario_id = models.OneToOneField(Usuario, on_delete = models.CASCADE )
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user_.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido']
