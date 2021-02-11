@@ -48,8 +48,25 @@ class Competencia(BaseModel):
     def __str__(self):
         return self.nombre_competencia
 
+class EnunciadoGrupo(BaseModel):
+    enunciado_general = models.TextField('Enunciado general del grupo de preguntas', null = False, blank = False)
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user_.setter
+    def _history_user(self, value):
+        self.changed_by = value
+
+    class Meta:
+        ordering = ['fecha_creacion',]
+        vebose_name = 'Enunciado grupo de preguntas'
+        verbose_name_plural = 'Enunciados grupo de preguntas'
+
 class GrupoPregunta(BaseModel):
-    enunciado_general = models.TextField('Nombre del grupo de preguntas', null = False, blank = False)
+    enunciado_general = models.ForeignKey(EnunciadoGrupo, on_delete = models.CASCADE)
     cantidad_max_pregutas = models.IntegerField('Cantidad maxíma de preguntas', null = False, blank = False, unique = True, max_length = 10)
     historial = HistoricalRecords()
 
@@ -137,8 +154,26 @@ class Justificacion(BaseModel):
         verbose_name = 'Justificacion'
         verbose_name_plural = 'Justificaciones'
 
-class Pregunta(BaseModel):
+class EnunciadoPregunta(BaseModel):
     enunciado = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user_.setter
+    def _history_user(self, value):
+        self.changed_by = value
+
+    class Meta:
+        ordering = ['fecha_creacion',]
+        verbose_name = 'Enunciado pregunta'
+        verbose_name_plural = 'Enunciados pregunta'
+
+
+class Pregunta(BaseModel):
+    enunciado = models.ForeignKey(EnunciadoPregunta, on_delete = models.CASCADE)
     grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
     opcion = models.ForeignKey(OpcionEnunciado, on_delete = models.CASCADE)
     respuesta = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)

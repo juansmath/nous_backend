@@ -7,13 +7,6 @@ class FacultadSerializer(serializers.ModelSerializer):
         model = Facultad
         exclude = ('estado',)
 
-    def to_representation(self, instance):
-        return {
-            'id': instance.id,
-            'codigo_facultad': instance.codigo_facultad,
-            'nombre_facultad': instance.nombre_facultad
-        }
-
 class ProgramaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Programa
@@ -30,3 +23,8 @@ class ProgramaSerializer(serializers.ModelSerializer):
                 'facultad': instance.facultad.id if instance.facultad.id is not None else ''
             },
         }
+
+class NivelAcademicoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = NivelAcademico
+        exclude = ('estado',)

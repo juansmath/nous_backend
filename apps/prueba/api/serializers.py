@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
-from apps.prueba.models import Modulo, Competencia, GrupoPregunta, OpcionRespuesta, OpcionEnunciado, Justificacion, Pregunta, BancoPregunta, Prueba, ResultadoPrueba
+from apps.prueba.models import Modulo, Competencia, OpcionRespuesta, GrupoPregunta, OpcionEnunciado, Justificacion, Pregunta, BancoPregunta, Prueba, ResultadoPrueba
 from apps.estudiante.models import Estudiante, HojaRespuesta
 from apps.docente.models import Docente
 
-from apps.estudiante.api.serializers import Estudiante, HojaRespuesta
+from apps.estudiante.models import Estudiante, HojaRespuesta
 
 class ModuloSerializer(serializers.ModelSerializer):
     class Meta:
@@ -14,6 +14,11 @@ class ModuloSerializer(serializers.ModelSerializer):
 class CompetenciaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Competencia
+        exclude = ('estado',)
+
+class OpcionRespuestaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OpcionRespuesta
         exclude = ('estado',)
 
 class GrupoPreguntaSerializer(serializers.ModelSerializer):
@@ -44,11 +49,6 @@ class GrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
                 'cantidad_max_preguntas': instance.cantidad_max_preguntas
             }
         }
-
-class OpcionRespuestaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = OpcionRespuesta
-        exclude = ('estado',)
 
 class OpcionEnunciadoSerializer(serializers.ModelSerializer):
     def validate_contenido_opcion(self, value):
