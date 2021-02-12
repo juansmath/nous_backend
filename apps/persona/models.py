@@ -1,5 +1,5 @@
 from django.db import models
-from simple_history.models import HistoricalRecords
+# from simple_history.models import HistoricalRecords
 
 from apps.base.models import BaseModel
 from apps.usuario.models import Usuario
@@ -26,7 +26,7 @@ class Persona(BaseModel):
         ('O+','O+'),
         ('O-','O-')
     ]
-    identificacion = models.CharField('Número de identificación', max_length=30, null = False, blank = False, unique = True)
+    identificacion = models.PositiveSmallIntegerField('Número de identificación', null = False, blank = False, unique = True)
     primer_nombre = models.CharField('Primer nombre', max_length=100, null = False, blank = False)
     segundo_nombre = models.CharField('Segundo nombre', max_length=100, null = True, blank = True )
     primer_apellido = models.CharField('Primer apellido', max_length=100, null = False, blank = False)
@@ -34,18 +34,18 @@ class Persona(BaseModel):
     genero = models.CharField('Genéro', choices = GENERO, max_length = 6)
     rh = models.CharField('Grupo sanguineo', max_length = 3, choices = GRUPO_SANGUINEO)
     estado_civil = models.CharField('Estado civil', max_length = 15, null = False, blank = False)
-    telefono = models.CharField('Número de télefono', max_length = 10, null = False, blank = False, unique = True)
+    telefono = models.PositiveSmallIntegerField('Número de télefono', null = False, blank = False, unique = True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null = False, blank = False)
     usuario_id = models.OneToOneField(Usuario, on_delete = models.CASCADE )
-    historial = HistoricalRecords()
+    # historial = HistoricalRecords()
 
-    @property
-    def _history_user(self):
-        return self.changed_by
+    # @property
+    # def _history_user(self):
+    #     return self.changed_by
 
-    @_history_user_.setter
-    def _history_user(self, value):
-        self.changed_by = value
+    # @_history_user_.setter
+    # def _history_user(self, value):
+        # self.changed_by = value
 
     class Meta:
         ordering = ['primer_nombre', 'segundo_nombre', 'primer_apellido', 'segundo_apellido']
