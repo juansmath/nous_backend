@@ -1,6 +1,9 @@
 from rest_framework import serializers
 
-from apps.prueba.models import Modulo, Competencia, OpcionRespuesta, GrupoPregunta, OpcionEnunciado, Justificacion, Pregunta, BancoPregunta, Prueba, ResultadoPrueba, HojaRespuesta
+from apps.prueba.models import (Modulo, Competencia, OpcionRespuesta, GrupoPregunta, EnunciadoGrupoPregunta, OpcionEnunciado,
+                                Justificacion, Pregunta, EnunciadoPregunta, BancoPreguntas, Prueba, ResultadoPrueba,
+                                HojaRespuesta, )
+
 from apps.estudiante.models import Estudiante
 from apps.docente.models import Docente
 
@@ -20,12 +23,7 @@ class OpcionRespuestaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
 class GrupoPreguntaSerializer(serializers.ModelSerializer):
-    def validate_unuciado_general(self, value):
-        if value == '':
-            raise serializers.ValidationError('El campo es obligatorio')
-        return value
-
-    def validate_cantidad_max_preguntas(self, value):
+    def validate_cantidad_preguntas(self, value):
         if value == '':
             raise serializers.ValidationError('el campo es obligatorio')
         return value
@@ -35,23 +33,55 @@ class GrupoPreguntaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
 class GrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
+    pregunta = PreguntaDetalleSerializer(many = True, read_only = True)
+
     class Meta:
         model = GrupoPregunta
-        exclude = ('estado',)
+        fields = ['id','cantidad_preguntas','preguntas','fecha_creacion']
+
 
     def to_representation(self, instance):
         return {
             'grupo_preguntas':{
                 'id': instance.id,
-                'ununciado_general': instance.enunciado_general,
-                'cantidad_max_preguntas': instance.cantidad_max_preguntas
+                'cantidad_preguntas': instance.cantidad_max_preguntas,
+                'preguntas': self.preguntas
+            }
+        }
+
+class EnunciadoGrupoPreguntaSerializer(serializers.ModelSerializer):
+    def validate_enunciado_general(self, value):
+        if value == '':
+            raise serializers.DjangoValidationError('El campo es obligatorio')
+        return value
+
+    def validate_grupo_general(self, value):
+        if value == '':
+            raise serializers.ValidationError('Debe seleccionar un grupo de preguntas')
+        return value
+
+    class Meta:
+        model = EnunciadoGrupoPregunta
+        exclude = ('estado',)
+
+class EnunciadoGrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EnunciadoGrupoPregunta
+        exclude = ('estado',)
+
+    def to_representation(self, instance):
+        return {
+            'enunciado_grupo_preguntas':{
+                'id': instance.id,
+                'enunciado_general': instance.enunciado_general,
+                'grupo_pregunta':instance.grupo_pregunta if instance.grupo_pregunta is not None else ''
             }
         }
 
 class OpcionEnunciadoSerializer(serializers.ModelSerializer):
     def validate_contenido_opcion(self, value):
         if value == '':
-            raise serializers.ValidationError('El campos es obligatorio')
+            raise serializers.ValidationError('El campo es obligatorio')
         return value
 
     def validate_letra(self, value):
@@ -118,11 +148,6 @@ class JustificacionDetalleSerializer(serializers.ModelSerializer):
         }
 
 class PreguntaSerializer(serializers.ModelSerializer):
-    def valdiate_enunciado(self, value):
-        if value == '':
-            raise serializers.ValidationError('El campo es obligatorio')
-        return value
-
     def valdiate_opcion(self, value):
         if value == '':
             raise serializers.ValidationError('Debe existir uno(s) para la pregunta')
@@ -143,6 +168,10 @@ class PreguntaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
 class PreguntaDetalleSerializer(serializers.ModelSerializer):
+    opcion = OpcionEnunciadoSerializer(many = True, read_only = True)
+    respuesta = OpcionRespuestaSerializer(many = True, read_only = True)
+    justificacion = JustificacionDetalleSerializer(many = True, read_only = True)
+
     class Meta:
         model = Pregunta
         exclude = ('estado',)
@@ -153,25 +182,54 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
                 'id': instance.id,
                 'enunciado': instance.enunciado,
                 'grupo': instance.grupo.id if instance.grupo.id is not None else '',
-                'opcion': instance.opcion.id if instance.opcion.id is not None else '',
-                'respuesta': instance.respuesta.id if instance.respuesta.id is not None else '',
-                'justificacion': instance.justificacion.id if instance.justificacion.id is not None else ''
+                'opcion': self.opcion,
+                'respuesta': self.respuesta,
+                'justificacion': self.justificacion
             }
         }
 
-class BancoPreguntaSerializer(serializers.ModelSerializer):
+class EnunciadoPreguntaSerializer(serializers.ModelSerializer):
+    def valdiate_enunciado(self, value):
+        if value == '':
+            raise serializers.ValidationError('El campo es obligatorio')
+        return value
+
+    def validation_pregunta(self, value):
+        if value == '':
+            raise serializers.ValidationError('Debe seleccioanr una pregunta')
+        return value
+
+    class Meta:
+        model = EnunciadoPregunta
+        exclude = ('estado',)
+
+class EnunciadoPreguntaDetalleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = EnunciadoPregunta
+        exclude = ('estado',)
+
+    def to_representation(self, instance):
+        return {
+            'enunciado_pregunta':{
+                'id': instance.id,
+                'enunciado': instance.enunciado,
+                'pregunta': instance.pregunta if instance.pregunta is not None else ''
+            }
+        }
+
+class BancoPreguntasSerializer(serializers.ModelSerializer):
     def validate_nombre_banco(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
         return value
 
     class Meta:
-        model = BancoPregunta
+        model = BancoPreguntas
         exclude = ('estado',)
 
-class BancoPreguntaDetalleSerializer(serializers.ModelSerializer):
+class BancoPreguntasDetalleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = BancoPregunta
+        model = BancoPreguntas
         exclude = ('estado',)
 
     def to_representation(self, instance):
@@ -221,8 +279,8 @@ class PruebaDetalleSerializer(serializers.ModelSerializer):
         exclude = ('estado')
 
     def to_representation(self, instance):
-        banco_preguntas = BancoPregunta.objects.filter(id_referencia = isinstance.id, estado = True)
-        banco_preguntas_serializer = BancoPreguntaDetalleSerializer(banco_preguntas, many = True)
+        banco_preguntas = BancoPreguntas.objects.filter(id_referencia = isinstance.id, estado = True)
+        banco_preguntas_serializer = BancoPreguntasDetalleSerializer(banco_preguntas, many = True)
 
         return {
             'info':{

@@ -29,7 +29,7 @@ class Modulo(BaseModel):
 class Competencia(BaseModel):
     nombre_competencia = models.CharField('Nombre de la competencia', max_length = 100, null = False, blank = False)
     porcentaje = models.FloatField('Porcentaje de la competencia', null = True, blank = True)
-    modulo_id = models.ForeignKey(Modulo, on_delete = models.CASCADE)
+    modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property
@@ -67,7 +67,7 @@ class GrupoPregunta(BaseModel):
 
 class EnunciadoGrupoPregunta(BaseModel):
     enunciado_general = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)
-    grupo_pregunta_id = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    grupo_pregunta = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property
@@ -113,7 +113,14 @@ class OpcionEnunciado(BaseModel):
         ('F','F'),
         ('G','G'),
         ('H','H'),
-        ('I','I')
+        ('I','I'),
+        ('J','J'),
+        ('K','K'),
+        ('L','L'),
+        ('M','M'),
+        ('N','N'),
+        ('O','O'),
+        ('P','P'),
     ]
     contenido_opcion = models.CharField('Contenido de la opción', max_length = 250, null = False, blank = False, unique = True)
     letra = models.CharField('Letra', max_length = 1, choices = LETRAS_OPCION, unique = True, null = False, blank = False)
@@ -136,7 +143,7 @@ class Justificacion(BaseModel):
     afirmacion = models.CharField('Afirmación', max_length = 250, null = False, blank = False)
     evidencia = models.CharField('Evidencia', max_length = 250, null = False, blank = False)
     justificacion = models.TextField('Justificacion de la pregunta', null = False, blank = False)
-    solucion_id = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
+    solucion = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property
@@ -152,9 +159,9 @@ class Justificacion(BaseModel):
         verbose_name_plural = 'Justificaciones'
 
 class Pregunta(BaseModel):
-    grupo_id = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
-    opcion_id = models.ForeignKey(OpcionEnunciado, on_delete = models.CASCADE)
-    respuesta_id = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
+    grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    opcion = models.ForeignKey(OpcionEnunciado, on_delete = models.CASCADE)
+    respuesta = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
     justificacion = models.OneToOneField(Justificacion, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
@@ -173,7 +180,7 @@ class Pregunta(BaseModel):
 
 class EnunciadoPregunta(BaseModel):
     enunciado = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)
-    pregunta_id = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
+    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property
@@ -189,9 +196,9 @@ class EnunciadoPregunta(BaseModel):
         verbose_name = 'Enunciado pregunta'
         verbose_name_plural = 'Enunciados pregunta'
 
-class ImagenGrupoPregunta(BaseModel):
+class ImagenEnunciadoGrupoPregunta(BaseModel):
     imagen = models.ImageField('Imagen grupo preguntas', upload_to = None, max_length=200, null = False, blank = False)
-    grupo_preguntas_id = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    enunciado_grupo_preguntas = models.ForeignKey(EnunciadoGrupoPregunta, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property
@@ -206,9 +213,9 @@ class ImagenGrupoPregunta(BaseModel):
         verbose_name = 'Imagen para grupo de preguntas'
         verbose_name_plural = 'Imagenes para grupo de preguntas'
 
-class ImagenPregunta(BaseModel):
-    imagen_pregunta = models.ImageField('Imagen pregunta', upload_to = None, max_length = 200)
-    pregunta_id = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
+class ImagenEnunciadoPregunta(BaseModel):
+    imagen_enunciado = models.ImageField('Imagen pregunta', upload_to = None, max_length = 200)
+    enunciado = models.ForeignKey(EnunciadoPregunta, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property
@@ -223,12 +230,12 @@ class ImagenPregunta(BaseModel):
         verbose_name = 'Imagen para pregunta'
         verbose_name_plural = 'Imagenes para preguntas'
 
-class BancoPregunta(BaseModel):
+class BancoPreguntas(BaseModel):
     nombre_banco = models.CharField('Nombre del banco de preguntas', max_length = 100, null = False, blank = False)
-    modulo_id = models.ForeignKey(Modulo, on_delete = models.CASCADE)
-    competencia_id = models.ManyToManyField(Competencia)
-    pregunta_id = models.ManyToManyField(Pregunta)
-    grupo_pregunta_id = models.ManyToManyField(GrupoPregunta)
+    modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
+    competencia = models.ManyToManyField(Competencia)
+    pregunta = models.ManyToManyField(Pregunta)
+    grupo_pregunta = models.ManyToManyField(GrupoPregunta)
     # historial = HistoricalRecords()
 
     # @property
@@ -252,7 +259,7 @@ class Prueba(BaseModel):
     nombre_prueba = models.CharField('Nombre de la prueba', max_length = 100, null = False, blank = False, unique = True)
     limite_tiempo = models.TimeField('Limite de tiempo para presentar la prueba')
     numero_intentos = models.PositiveSmallIntegerField(default = 1)
-    banco_preguntas_id = models.ManyToManyField(BancoPregunta)
+    banco_preguntas = models.ManyToManyField(BancoPreguntas)
     # historial = HistoricalRecords()
 
     # @property
@@ -273,11 +280,11 @@ class Prueba(BaseModel):
         return self.nombre_prueba
 
 class HojaRespuesta(BaseModel):
-    prueba_id = models.ForeignKey(Prueba, on_delete = models.CASCADE)
-    grupo_preguntas_id = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
-    pregunta_id = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
-    opcion_marcada_id = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
-    estudiante_id = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
+    prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
+    grupo_preguntas = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
+    opcion_marcada = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
+    estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
     tiempo_empleado = models.TimeField('Tiempo que empleo para responder la pregunta', null = False, blank = False)
     # historial = HistoricalRecords()
 
@@ -294,11 +301,11 @@ class HojaRespuesta(BaseModel):
         verbose_name_plural = 'Hoja de respuestas'
 
 class ResultadoPrueba(BaseModel):
-    estudiante_id = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
-    docente_id = models.ForeignKey(Docente, on_delete = models.CASCADE)
-    modulo_id = models.ForeignKey(Modulo, on_delete = models.CASCADE)
-    prueba_id = models.ForeignKey(Prueba, on_delete = models.CASCADE)
-    hoja_respuesta_id = models.ForeignKey(HojaRespuesta, on_delete = models.CASCADE)
+    estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
+    docente = models.ForeignKey(Docente, on_delete = models.CASCADE)
+    modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
+    prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
+    hoja_respuesta = models.ForeignKey(HojaRespuesta, on_delete = models.CASCADE)
     calificacion = models.BooleanField('Calificación de la prueba', default = False, null = False, blank = False)
     # historial = HistoricalRecords()
 
@@ -311,7 +318,7 @@ class ResultadoPrueba(BaseModel):
     #     self.changed_by = value
 
     class Meta:
-        ordering = ['estudiante_id']
+        ordering = ['estudiante']
         managed = True
         verbose_name = 'Resultado de la prueba'
         verbose_name_plural = 'Resultados de las pruebas'

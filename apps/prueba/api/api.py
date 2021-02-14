@@ -50,5 +50,3 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         data = serializer_class(data, many = True)
         return Response(data.data, status = status.HTTP_200_OK)
 
-
-
