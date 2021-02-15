@@ -14,33 +14,6 @@ from apps.prueba.api.serializers import (ModuloSerializer, CompetenciaSerializer
                                          GrupoPreguntaSerializer, OpcionEnunciadoSerializer, JustificacionSerializer,
                                          PreguntaSerilaizer, BancoPreguntaSerializer, PruebaSerializer, ResultadoPruebaSerializer)
 
-class ModuloViewSet(viewsets.ViewSet):
-    model = Modulo
-    serializer_class = ModuloSerializer
-
-    def list(self, request):
-        data = self.model.objects.filter(estado = True)
-        data = self.serializer_class(data, many = True)
-        return Response(data.data, status = status.HTTP_200_OK)
-
-class CompetenciaViewSet(viewsets.ViewSet):
-    model = Competencia
-    serializer_class = CompetenciaSerializer
-
-    def list(self, request):
-        data = self.model.objects.filter(estado = True)
-        data = self.serializer_class(data, many = True)
-        return Response(data.data, status = status.HTTP_200_OK)
-
-class OpcionRespuestaViewSet(viewsets.ViewSet):
-    model = OpcionRespuesta
-    serializer_class = OpcionrespuestaSerializer
-
-    def list(self, request):
-        data = self.model.objects.filter(estado = True)
-        data = serializer_class(data, many = True)
-        return Response(data.data, status = status.HTTP_200_OK)
-
 class GrupoPreguntaViewSet(viewsets.ViewSet):
     model = GrupoPreguta
     serializer_class = GrupoPreguntaSerializer

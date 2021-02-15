@@ -36,7 +36,7 @@ class Persona(BaseModel):
     estado_civil = models.CharField('Estado civil', max_length = 15, null = False, blank = False)
     telefono = models.PositiveSmallIntegerField('Número de télefono', null = False, blank = False, unique = True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null = False, blank = False)
-    usuario_id = models.OneToOneField(Usuario, on_delete = models.CASCADE )
+    usuario = models.OneToOneField(Usuario, on_delete = models.CASCADE )
     # historial = HistoricalRecords()
 
     # @property

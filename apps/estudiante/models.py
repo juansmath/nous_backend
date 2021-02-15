@@ -6,9 +6,9 @@ from apps.persona.models import Persona
 from apps.institucional.models import Programa, NivelAcademico
 
 class Estudiante(BaseModel):
-    persona_id = models.OneToOneField(Persona, on_delete = models.CASCADE)
-    nivel_academico_id = models.ForeignKey(NivelAcademico, on_delete = models.CASCADE)
-    programas_id = models.ManyToManyField(Programa)
+    persona = models.OneToOneField(Persona, on_delete = models.CASCADE)
+    nivel_academico = models.ForeignKey(NivelAcademico, on_delete = models.CASCADE)
+    programas = models.ManyToManyField(Programa)
     # historial = HistoricalRecords()
 
     # @property
