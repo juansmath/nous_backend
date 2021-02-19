@@ -2,31 +2,30 @@ from rest_framework import viewsets
 from rest_framework import status
 from rest_framework.response import Response
 
-from apps.prueba.api.serializers.general_serializer import ModuloSerializer, CompetenciaSerializer, OpcionRespuestaSerializer
+from .serializers import ProgramaSerializer, FacultadSerializer, NivelAcademicoSerializer
+from apps.institucional.models import Programa, Facultad, NivelAcademico
 
-from apps.prueba.models import Modulo, Competencia, OpcionRespuesta
-
-class ModuloViewSet(viewsets.ViewSet):
-    model = Modulo
-    serializer_class = ModuloSerializer
-
-    def list(self, request):
-        data = self.model.objects.filter(estado = True)
-        data = self.serializer_class(data, many = True)
-        return Response(data.data, status = status.HTTP_200_OK)
-
-class CompetenciaViewSet(viewsets.ViewSet):
-    model = Competencia
-    serializer_class = CompetenciaSerializer
+class ProgramaViewSet(viewsets.ViewSet):
+    model = Programa
+    serializer_class = ProgramaSerializer
 
     def list(self, request):
         data = self.model.objects.filter(estado = True)
         data = self.serializer_class(data, many = True)
         return Response(data.data, status = status.HTTP_200_OK)
 
-class OpcionRespuestaViewSet(viewsets.ViewSet):
-    model = OpcionRespuesta
-    serializer_class = OpcionRespuestaSerializer
+class FacultadViewSet(viewsets.ViewSet):
+    model = Facultad
+    serializer_class = FacultadSerializer
+
+    def list(self, request):
+        data = self.model.objects.filter(estado = True)
+        data = self.serializer_class(data, many = True)
+        return Response(data.data, status = status.HTTP_200_OK)
+
+class NivelAcademicoViewSet(viewsets.ViewSet):
+    model = NivelAcademico
+    serializer_class = NivelAcademicoSerializer
 
     def list(self, request):
         data = self.model.objects.filter(estado = True)
