@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from apps.prueba.models import Pregunta, EnunciadoPregunta, Justificacion, OpcionEnunciado
+from .general_serializer import OpcionRespuestaSerializer
 
 class EnunciadoPreguntaSerializer(serializers.ModelSerializer):
     def valdiate_enunciado(self, value):

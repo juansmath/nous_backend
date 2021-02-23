@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.prueba.api.serializers.pregunta_serializer import PreguntaDetalleSerializer
 
-from apps.prueba import GrupoPregunta, EnunciadoGrupoPregunta
+from apps.prueba.models import GrupoPregunta, EnunciadoGrupoPregunta
 
 class EnunciadoGrupoPreguntaSerializer(serializers.ModelSerializer):
     def validate_enunciado_general(self, value):

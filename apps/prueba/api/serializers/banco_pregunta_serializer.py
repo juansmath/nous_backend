@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from apps.prueba.api.serializers.preguntas_serializer import PreguntaDetalleSerializer
+from apps.prueba.api.serializers.pregunta_serializer import PreguntaDetalleSerializer
 from apps.prueba.api.serializers.general_serializer import CompetenciaSerializer
 from apps.prueba.api.serializers.grupo_pregunta_serializer import GrupoPreguntaDetalleSerializer
+
+from apps.prueba.models import BancoPreguntas, Pregunta,GrupoPregunta, Competencia
 
 class BancoPreguntasSerializer(serializers.ModelSerializer):
     def validate_nombre_banco(self, value):

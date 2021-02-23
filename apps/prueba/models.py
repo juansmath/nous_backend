@@ -159,7 +159,7 @@ class Justificacion(BaseModel):
         verbose_name_plural = 'Justificaciones'
 
 class Pregunta(BaseModel):
-    grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE, null = True, blank = True)
     opcion = models.ForeignKey(OpcionEnunciado, on_delete = models.CASCADE)
     respuesta = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
     justificacion = models.OneToOneField(Justificacion, on_delete = models.CASCADE)
@@ -234,8 +234,8 @@ class BancoPreguntas(BaseModel):
     nombre_banco = models.CharField('Nombre del banco de preguntas', max_length = 100, null = False, blank = False)
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
     competencia = models.ManyToManyField(Competencia)
-    pregunta = models.ManyToManyField(Pregunta)
-    grupo_pregunta = models.ManyToManyField(GrupoPregunta)
+    pregunta = models.ManyToManyField(Pregunta, null = True, blank = True)
+    grupo_pregunta = models.ManyToManyField(GrupoPregunta, null = True, blank = True)
     # historial = HistoricalRecords()
 
     # @property
@@ -281,9 +281,9 @@ class Prueba(BaseModel):
 
 class HojaRespuesta(BaseModel):
     prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
-    grupo_preguntas = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
-    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
-    opcion_marcada = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
+    grupo_preguntas = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE, null = True, blank = True)
+    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE, null = True, blank = True)
+    opcion_marcada = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE, null = True, blank = True)
     estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
     tiempo_empleado = models.TimeField('Tiempo que empleo para responder la pregunta', null = False, blank = False)
     # historial = HistoricalRecords()
