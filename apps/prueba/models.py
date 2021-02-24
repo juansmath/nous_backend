@@ -235,7 +235,7 @@ class BancoPreguntas(BaseModel):
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
     competencia = models.ManyToManyField(Competencia)
     pregunta = models.ManyToManyField(Pregunta, null = True, blank = True)
-    grupo_pregunta = models.ManyToManyField(GrupoPregunta, null = True, blank = True)
+    grupo_pregunta = models.ManyToManyField(GrupoPregunta)
     # historial = HistoricalRecords()
 
     # @property

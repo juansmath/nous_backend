@@ -33,7 +33,7 @@ class Persona(BaseModel):
     segundo_apellido = models.CharField('Segundo apellido', max_length = 100, null = True, blank = True)
     genero = models.CharField('Genéro', choices = GENERO, max_length = 6)
     rh = models.CharField('Grupo sanguineo', max_length = 3, choices = GRUPO_SANGUINEO)
-    estado_civil = models.CharField('Estado civil', max_length = 15, null = False, blank = False)
+    estado_civil = models.CharField('Estado civil', max_length = 15, null = False, blank = False, choices = ESTADO_CIVIL)
     telefono = models.PositiveSmallIntegerField('Número de télefono', null = False, blank = False, unique = True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null = False, blank = False)
     usuario = models.OneToOneField(Usuario, on_delete = models.CASCADE )
