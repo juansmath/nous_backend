@@ -26,7 +26,7 @@ class Persona(BaseModel):
         ('O+','O+'),
         ('O-','O-')
     ]
-    identificacion = models.PositiveSmallIntegerField('Número de identificación', null = False, blank = False, unique = True)
+    identificacion = models.PositiveIntegerField('Número de identificación', null = False, blank = False, unique = True)
     primer_nombre = models.CharField('Primer nombre', max_length=100, null = False, blank = False)
     segundo_nombre = models.CharField('Segundo nombre', max_length=100, null = True, blank = True )
     primer_apellido = models.CharField('Primer apellido', max_length=100, null = False, blank = False)
@@ -34,7 +34,7 @@ class Persona(BaseModel):
     genero = models.CharField('Genéro', choices = GENERO, max_length = 6)
     rh = models.CharField('Grupo sanguineo', max_length = 3, choices = GRUPO_SANGUINEO)
     estado_civil = models.CharField('Estado civil', max_length = 15, null = False, blank = False, choices = ESTADO_CIVIL)
-    telefono = models.PositiveSmallIntegerField('Número de télefono', null = False, blank = False, unique = True)
+    telefono = models.PositiveIntegerField('Número de télefono', null = False, blank = False, unique = True)
     fecha_nacimiento = models.DateField('Fecha de nacimiento', null = False, blank = False)
     usuario = models.OneToOneField(Usuario, on_delete = models.CASCADE )
     # historial = HistoricalRecords()
