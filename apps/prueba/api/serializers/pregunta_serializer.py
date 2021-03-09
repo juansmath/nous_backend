@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from apps.prueba.models import Pregunta, EnunciadoPregunta, Justificacion, OpcionEnunciado
+from apps.prueba.models import Pregunta, EnunciadoPregunta, Justificacion, OpcionPregunta
 from .general_serializer import OpcionRespuestaSerializer
 
 class EnunciadoPreguntaSerializer(serializers.ModelSerializer):
@@ -12,6 +12,9 @@ class EnunciadoPreguntaSerializer(serializers.ModelSerializer):
         if value == '':
             raise serializers.ValidationError('Debe seleccionar una pregunta')
         return value
+
+    def create(self, validated_data):
+        return super().create(validated_data)
 
     class Meta:
         model = EnunciadoPregunta
@@ -71,10 +74,15 @@ class JustificacionDetalleSerializer(serializers.ModelSerializer):
             }
         }
 
-class OpcionEnunciadoSerializer(serializers.ModelSerializer):
+class OpcionPreguntaSerializer(serializers.ModelSerializer):
     def validate_contenido_opcion(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
+        return value
+
+    def validate_pregunta(self, value):
+        if value == '':
+            raise serializers.ValidationError('Este campo es obligatorio')
         return value
 
     def validate_letra(self, value):
@@ -83,12 +91,12 @@ class OpcionEnunciadoSerializer(serializers.ModelSerializer):
         return value
 
     class Meta:
-        model = OpcionEnunciado
+        model = OpcionPregunta
         exclude = ('estado',)
 
-class OpcionEnunciadoDetalleSerializer(serializers.ModelSerializer):
+class OpcionPreguntaDetalleSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OpcionEnunciado
+        model = OpcionPregunta
         exclude = ('estado',)
 
     def to_representation(self, instance):
@@ -96,16 +104,12 @@ class OpcionEnunciadoDetalleSerializer(serializers.ModelSerializer):
             'enunciado':{
                 'id': instance.id,
                 'contenido_opcion': instance.contenido_enunciado,
-                'letra': instance.letra
+                'letra': instance.letra,
+                'pregunta': instance.pregunta if instance.pregunta is not None else ''
             }
         }
 
 class PreguntaSerializer(serializers.ModelSerializer):
-    def valdiate_opcion(self, value):
-        if value == '':
-            raise serializers.ValidationError('Debe existir uno(s) para la pregunta')
-        return value
-
     def validate_respuesta(self, value):
         if value == '':
             raise serializers.ValidationError('Debe seleccionar la respuesta')
@@ -116,12 +120,15 @@ class PreguntaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Debe selecionar una justificación')
         return value
 
+    def create(self, validated_data):
+        print(validated_data);
+
     class Meta:
         model = Pregunta
         exclude = ('estado',)
 
 class PreguntaDetalleSerializer(serializers.ModelSerializer):
-    opcion = OpcionEnunciadoSerializer(many = True, read_only = True)
+    opcion = OpcionPreguntaDetalleSerializer(many = True, read_only = True)
     respuesta = OpcionRespuestaSerializer(many = True, read_only = True)
     justificacion = JustificacionDetalleSerializer(many = True, read_only = True)
 
@@ -133,9 +140,9 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
         return {
             'pregunta':{
                 'id': instance.id,
-                'enunciado': instance.enunciado,
+                'enunciados': instance.enunciado,
                 'grupo': instance.grupo.id if instance.grupo.id is not None else '',
-                'opcion': self.opcion,
+                'opciones': self.opcion,
                 'respuesta': self.respuesta,
                 'justificacion': self.justificacion
             }

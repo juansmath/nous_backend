@@ -66,7 +66,7 @@ class GrupoPregunta(BaseModel):
         verbose_name_plural = 'Grupos de pregusntas'
 
 class EnunciadoGrupoPregunta(BaseModel):
-    enunciado_general = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)
+    enunciado_general = models.TextField('Enunciado general del grupo de preguntas', null = False, blank = False, unique = True)
     grupo_pregunta = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
@@ -84,7 +84,7 @@ class EnunciadoGrupoPregunta(BaseModel):
         verbose_name_plural = 'Enunciados grupo preguntas'
 
 class OpcionRespuesta(BaseModel):
-    letra_opcion = models.CharField('nombre de la opcion', max_length = 1, null = False, blank = False, unique = True)
+    letra_opcion = models.CharField('nombre de la letra', max_length = 1, null = False, blank = False, unique = True)
     # historial = HistoricalRecords()
 
     # @property
@@ -102,42 +102,6 @@ class OpcionRespuesta(BaseModel):
 
     def __str__(self):
         return self.letra_opcion
-
-class OpcionEnunciado(BaseModel):
-    LETRAS_OPCION = [
-        ('A','A'),
-        ('B','B'),
-        ('C','C'),
-        ('D','D'),
-        ('E','E'),
-        ('F','F'),
-        ('G','G'),
-        ('H','H'),
-        ('I','I'),
-        ('J','J'),
-        ('K','K'),
-        ('L','L'),
-        ('M','M'),
-        ('N','N'),
-        ('O','O'),
-        ('P','P'),
-    ]
-    contenido_opcion = models.CharField('Contenido de la opción', max_length = 250, null = False, blank = False, unique = True)
-    letra = models.CharField('Letra', max_length = 1, choices = LETRAS_OPCION, unique = True, null = False, blank = False)
-    # historial = HistoricalRecords()
-
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
-
-    # @_history_user_.setter
-    # def _history_user(self, value):
-        # self.changed_by = value
-
-    class Meta:
-        verbose_name = 'Opcion Enunciado'
-        verbose_name_plural = 'Opciones enunciado'
-
 
 class Justificacion(BaseModel):
     afirmacion = models.CharField('Afirmación', max_length = 250, null = False, blank = False)
@@ -160,7 +124,6 @@ class Justificacion(BaseModel):
 
 class Pregunta(BaseModel):
     grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE, null = True, blank = True)
-    opcion = models.ForeignKey(OpcionEnunciado, on_delete = models.CASCADE)
     respuesta = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
     justificacion = models.OneToOneField(Justificacion, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
@@ -177,6 +140,42 @@ class Pregunta(BaseModel):
         managed = True
         verbose_name = 'Pregunta'
         verbose_name_plural = 'Preguntas'
+
+class OpcionPregunta(BaseModel):
+    LETRAS_OPCION = [
+        ('A','A'),
+        ('B','B'),
+        ('C','C'),
+        ('D','D'),
+        ('E','E'),
+        ('F','F'),
+        ('G','G'),
+        ('H','H'),
+        ('I','I'),
+        ('J','J'),
+        ('K','K'),
+        ('L','L'),
+        ('M','M'),
+        ('N','N'),
+        ('O','O'),
+        ('P','P'),
+    ]
+    contenido_opcion = models.CharField('Contenido de la opción', max_length = 250, null = False, blank = False, unique = True)
+    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
+    letra = models.CharField('Letra', max_length = 1, choices = LETRAS_OPCION, unique = True, null = False, blank = False)
+    # historial = HistoricalRecords()
+
+    # @property
+    # def _history_user(self):
+    #     return self.changed_by
+
+    # @_history_user_.setter
+    # def _history_user(self, value):
+        # self.changed_by = value
+
+    class Meta:
+        verbose_name = 'Opcion Enunciado'
+        verbose_name_plural = 'Opciones enunciado'
 
 class EnunciadoPregunta(BaseModel):
     enunciado = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)

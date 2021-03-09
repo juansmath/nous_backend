@@ -19,7 +19,11 @@ class PersonaViewSet(viewsets.ViewSet):
 
     def perform_create(self, serializer):
         if serializer.is_valid():
+            error = serializer.errors
             serializer.save()
+        else:
+            validar_error = True
+            error = serializer.errors
 
     def perform_update(self, serializer):
         if serializer.is_valid():
@@ -45,7 +49,7 @@ class PersonaViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         persona_data = self.get_queryset(kwargs['pk'])
-        serializer_persona = self.serializer_class(persona_data)
+        serializer_persona = PersonaDetalleSerializer(persona_data)
         return Response(serializer_persona.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
@@ -56,7 +60,7 @@ class PersonaViewSet(viewsets.ViewSet):
 
         serializer_persona = self.serializer_class(persona_data, request.data)
         self.perform_update(serializer_persona)
-        return Response(serializer_persona.data, status=status.HTTP_201_CREATED)
+        return Response(serializer_persona.data,{'mensaje':'Ha sido actualizado exitosamente!'}, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
         persona_data = self.get_queryset(kwargs['pk'])

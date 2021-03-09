@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import ( Modulo, Competencia, GrupoPregunta, EnunciadoGrupoPregunta, OpcionRespuesta,
-    OpcionEnunciado, Justificacion, Pregunta, EnunciadoPregunta, ImagenEnunciadoGrupoPregunta, ImagenEnunciadoPregunta,
+    OpcionPregunta, Justificacion, Pregunta, EnunciadoPregunta, ImagenEnunciadoGrupoPregunta, ImagenEnunciadoPregunta,
     BancoPreguntas, Prueba, HojaRespuesta, ResultadoPrueba)
 
 admin.site.register(Modulo)
@@ -8,7 +8,7 @@ admin.site.register(Competencia)
 admin.site.register(GrupoPregunta)
 admin.site.register(EnunciadoGrupoPregunta)
 admin.site.register(OpcionRespuesta)
-admin.site.register(OpcionEnunciado)
+admin.site.register(OpcionPregunta)
 admin.site.register(Justificacion)
 admin.site.register(Pregunta)
 admin.site.register(EnunciadoPregunta)
