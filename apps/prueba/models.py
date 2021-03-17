@@ -107,7 +107,7 @@ class Justificacion(BaseModel):
     afirmacion = models.CharField('Afirmación', max_length = 250, null = False, blank = False)
     evidencia = models.CharField('Evidencia', max_length = 250, null = False, blank = False)
     justificacion = models.TextField('Justificacion de la pregunta', null = False, blank = False)
-    solucion = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
+
     # historial = HistoricalRecords()
 
     # @property

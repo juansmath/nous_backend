@@ -6,8 +6,8 @@ from apps.prueba.api.serializers.grupo_pregunta_serializer import GrupoPreguntaD
 from apps.prueba.models import BancoPreguntas, Pregunta,GrupoPregunta, Competencia
 
 class BancoPreguntasSerializer(serializers.ModelSerializer):
-    # pregunta = serializers.PrimaryKeyRelatedField(allow_empty = True, many = True, queryset=Pregunta.objects.all())
-    # grupo_pregunta = serializers.PrimaryKeyRelatedField(allow_empty = True, many = True, queryset=GrupoPregunta.objects.all())
+    pregunta = serializers.PrimaryKeyRelatedField(allow_empty = True, many = True, queryset=Pregunta.objects.all())
+    grupo_pregunta = serializers.PrimaryKeyRelatedField(allow_empty = True, many = True, queryset=GrupoPregunta.objects.all())
 
     def validate_nombre_banco(self, value):
         if value == '':

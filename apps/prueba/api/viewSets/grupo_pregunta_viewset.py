@@ -25,27 +25,26 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
     def create(self, request):
         validar_errores = False
         preguntas_validas, enuciados_grupo_pregunta_valida, enunciado_pregunta_valida, opciones_pregunta_validas = [], [], [], []
-        errores_pregunta, errores_enunciado_grupo_pregunta, errores_enunciado_pregunta, errores_opciones_pregunta, errores_justificacion = {}, {}, {}, {}, {}
+        errores_pregunta, errores_enunciado_grupo_pregunta, errores_enunciado_pregunta, errores_opciones_pregunta, errores_justificacion, errores = {}, {}, {}, {}, {}, {}
 
-        grupo_preguntas = request.data['grupo_pregunta']
-        enunciados_grupo_pregunta = grupo_preguntas['enunciados_grupo_pregunta']
+        grupo_preguntas = request.data['grupo_preguntas']
+        enunciados_grupo_preguntas = grupo_preguntas['enunciados_grupo_preguntas']
         preguntas = grupo_preguntas['preguntas']
-        justificacion = grupo_preguntas['justificacion']
 
+        justificacion = preguntas['justificacion']
         enunciados_pregunta = preguntas['enunciados_pregunta']
         opciones_pregunta = preguntas['opciones_pregunta']
 
         del preguntas['enunciados_pregunta']
-        del preguntas['enunciados_pregunta']
+        del preguntas['opciones_pregunta']
+        del preguntas['justificacion']
 
         preguntas_data = preguntas
 
         del grupo_preguntas['enunciados_grupo_pregunta']
         del grupo_preguntas['preguntas']
-        del grupo_preguntas['preguntas']
-        del grupo_preguntas['justificacion']
 
-        grupo_preguntas_serializer = self.serializer_class(data = grupo_preguntas, context = grupo_preguntas)
+        grupo_preguntas_serializer = self.serializer_class(data = grupo_preguntas)
 
         if grupo_preguntas_serializer.is_valid():
             error = grupo_preguntas_serializer.errors
@@ -53,16 +52,36 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             validar_errores = True
             error = grupo_preguntas_serializer.errors
 
-        justificacion_serializer = JustificacionSerializer(data = justificacion, context = justificacion)
-
-        if justificacion_serializer.is_valid():
-            error = justificacion_serializer.errors
-            errores_jsutificacion = {'justificacion': error}
-        else:
-            validar_errores = True
-            error = justificacion_serializer.errores
-            errores_justificacion = {'justificacion': error}
         error.update(errores_jsutificacion)
+
+        for indice, pregunta in enumerate(preguntas_data):
+            justificacion = pregunta['justificacion']
+            opciones_pregunta = pregunta['opciones_pregunta']
+            enunciados_pregunta = pregunta['enunciados_pregunta']
+
+            justificacion_serializer = JustificacionSerializer(data = justificacion)
+            if justificacion_serializer.is_valid():
+                error = justificacion_serializer.errors
+                errores_jsutificacion = {'justificacion': error}
+            else:
+                validar_errores = True
+                error = justificacion_serializer.errores
+                errores_justificacion = {'justificacion': error}
+
+            error.update(errores_justificacion)
+            justificacion = {}
+
+            pregunta_serializer = PreguntaSerializer(pregunta['pregunta'])
+
+            if pregunta_serializer.is_valid():
+                error = pregunta_serializer.errors
+            else:
+                validar_errores = True
+                error = pregunta_serializer.errors
+                errores_pregunta = {'pregunta': error}
+            error.update(errores_pregunta)
+
+            
 
         for indice, enunciado_grupo in enumerate(enunciados_grupo_pregunta):
             enunciados_grupo_pregunta_serializer = EnunciadoGrupoPreguntaSerializer(data = enunciados_grupo_pregunta)

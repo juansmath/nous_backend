@@ -9,8 +9,3 @@ class BaseViewSet(viewsets.ViewSet):
 
     def get_queryset(self):
         return self.queryset
-
-    def list(self, request):
-        data = self.get_queryset()
-        data = serializer_class(data, many = True)
-        return Response(data.data, status = status.HTTP_200_OK)
