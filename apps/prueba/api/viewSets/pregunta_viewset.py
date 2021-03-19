@@ -26,7 +26,7 @@ class PreguntaViewSet(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
         validar_errores = False
-        opciones_pregunta_validas, enunciados_pregunta_validos = [], []
+        opciones_pregunta_validas, enunciados_pregunta_validas = [], []
         errores_opciones, errores_justificacion, errores_enunciados, error = {}, {}, {}, {}
 
         pregunta = request.data['pregunta']
@@ -62,7 +62,7 @@ class PreguntaViewSet(viewsets.ViewSet):
         else:
             validar_errores = True
             error = pregunta_serializer.errors
-        print(pregunta_data)
+
         for indice, enunciado in enumerate(enunciados_pregunta):
             enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(data = enunciado)
             if enunciado_pregunta_serializer.is_valid():
@@ -70,13 +70,13 @@ class PreguntaViewSet(viewsets.ViewSet):
                     enunciado = enunciado_pregunta_serializer.validated_data['enunciado'],
                     pregunta = enunciado_pregunta_serializer.validated_data['pregunta']
                 )
-                enunciados_pregunta_validos.append(enunciado)
+                enunciados_pregunta_validas.append(enunciado)
                 errores_enunciados[indice] = enunciado_pregunta_serializer.errors
             else:
                 validar_errores = True
                 errores_enunciados[indice] = enunciado_pregunta_serializer.errors
 
-        errores_enunciados[indice] = {'enunciado': errores_enunciados}
+        errores_enunciados = {'enunciado': errores_enunciados}
         error.update(errores_enunciados)
 
         for indice, opcion_pregunta in enumerate(opciones_pregunta):
@@ -92,23 +92,24 @@ class PreguntaViewSet(viewsets.ViewSet):
             else:
                 validar_errores = True
                 errores_opciones[indice] = opciones_pregunta_serializer.errors
+
         errores_opciones = {'opciones': errores_opciones}
         error.update(errores_opciones)
 
         if validar_errores:
-            return Response({'error': error}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({'error': error},status = status.HTTP_400_BAD_REQUEST)
 
         pregunta_serializer.save()
+        pregunta = Pregunta.objects.filter(id = pregunta_serializer.data['id']).first()
 
-        for enunciado in opciones_pregunta_validas:
-            enunciado.pregunta = pregunta_serializer.data['id']
+        for enunciado in enunciados_pregunta_validas:
+            enunciado.pregunta = pregunta
 
         for opcion in opciones_pregunta_validas:
-            opcion.pregunta = pregunta_serializer.data['id']
-            print('Hola---------------------------------------------')
+            opcion.pregunta = pregunta
 
-        EnunciadoPregunta.objects.bulk_create(enunciados_pregunta_validos)
+        EnunciadoPregunta.objects.bulk_create(enunciados_pregunta_validas)
         OpcionPregunta.objects.bulk_create(opciones_pregunta_validas)
 
-        return Response({'mensaje':'Se ha creado correctamente la pregunta'}, status = status.HTTP_201_CREATED)
+        return Response({'mensaje':'Se ha registrado correctamente la pregunta'}, status = status.HTTP_201_CREATED)
 

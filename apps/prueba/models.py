@@ -161,8 +161,8 @@ class OpcionPregunta(BaseModel):
         ('P','P'),
     ]
     contenido_opcion = models.CharField('Contenido de la opción', max_length = 250, null = False, blank = False, unique = True)
-    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
-    letra = models.CharField('Letra', max_length = 1, choices = LETRAS_OPCION, unique = True, null = False, blank = False)
+    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE, blank = True, null = True)
+    letra = models.CharField('Letra', max_length = 1, choices = LETRAS_OPCION, null = False, blank = False)
     # historial = HistoricalRecords()
 
     # @property
@@ -179,7 +179,7 @@ class OpcionPregunta(BaseModel):
 
 class EnunciadoPregunta(BaseModel):
     enunciado = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)
-    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE)
+    pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE, blank = True, null = True)
     # historial = HistoricalRecords()
 
     # @property
