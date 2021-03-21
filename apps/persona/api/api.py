@@ -33,9 +33,6 @@ class PersonaViewSet(viewsets.ViewSet):
             validar_error = True
             error = serializer.errors
 
-    def perform_destroy(self, instance):
-        instance.delete()
-
     def list(self, request):
         data = self.get_queryset()
         data = self.serializer_class(data, many = True)
@@ -60,13 +57,14 @@ class PersonaViewSet(viewsets.ViewSet):
 
         serializer_persona = self.serializer_class(persona_data, request.data)
         self.perform_update(serializer_persona)
-        return Response(serializer_persona.data,{'mensaje':'Ha sido actualizado exitosamente!'}, status=status.HTTP_201_CREATED)
+        return Response(serializer_persona.data,{'mensaje':f'{self.model.__name__}Ha sido actualizado exitosamente!'}, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, *args, **kwargs):
-        persona_data = self.get_queryset(kwargs['pk'])
+        persona = self.get_queryset(kwargs['pk'])
 
-        if not persona_data:
+        if not persona:
             return Response({'Error':'No existe este usuario con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
 
-        self.perform_destroy(persona_data)
-        return Response({'mensage':'el usuario ha sido eliminado'},status=status.HTTP_204_NO_CONTENT)
+        persona.estado = False
+        persona.save()
+        return Response({'mensage':'el usuario ha sido eliminado!'},status=status.HTTP_204_NO_CONTENT)

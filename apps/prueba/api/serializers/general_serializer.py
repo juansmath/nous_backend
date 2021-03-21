@@ -15,4 +15,4 @@ class CompetenciaSerializer(serializers.ModelSerializer):
 class OpcionRespuestaSerializer(serializers.ModelSerializer):
     class Meta:
         model = OpcionRespuesta
-        exclude = ('estado',)
+        exclude = ('estado','fecha_creacion', 'fecha_eliminacion', 'fecha_actualizacion')
