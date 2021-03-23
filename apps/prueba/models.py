@@ -67,7 +67,7 @@ class GrupoPregunta(BaseModel):
 
 class EnunciadoGrupoPregunta(BaseModel):
     enunciado_general = models.TextField('Enunciado general del grupo de preguntas', null = False, blank = False, unique = True)
-    grupo_pregunta = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property

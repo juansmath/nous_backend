@@ -106,7 +106,6 @@ class PreguntaViewSet(viewsets.ViewSet):
             justificacion = Justificacion.objects.filter(id = justificacion_serializer.data['id'])
             if justificacion:
                 justificacion.delete()
-            return Response({'error': error},status = status.HTTP_400_BAD_REQUEST)
 
         pregunta_serializer.save()
         pregunta = Pregunta.objects.filter(id = pregunta_serializer.data['id']).first()
