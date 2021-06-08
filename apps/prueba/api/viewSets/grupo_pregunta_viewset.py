@@ -32,9 +32,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
         grupo_preguntas = request.data['grupo_preguntas']
         enunciados_grupo_pregunta = grupo_preguntas['enunciados_grupo_pregunta']
-        preguntas = grupo_preguntas['pregunta']
-
-        preguntas = preguntas['pregunta']
+        preguntas = grupo_preguntas['preguntas']
 
         del grupo_preguntas['enunciados_grupo_pregunta']
         del grupo_preguntas['preguntas']
@@ -48,7 +46,8 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         else:
             validar_errores = True
             errores_grupo_pregunta = grupo_preguntas_serializer.errors
-        errores_grupo_pregunta = {'grupo_preguntas'}
+
+        errores_grupo_pregunta = {'grupo_preguntas': errores_grupo_pregunta}
         error.update(errores_grupo_pregunta)
 
         #Pregunta
@@ -74,7 +73,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             justificacion_serializer.save()
 
             pregunta['pregunta']['justificacion'] = justificacion_serializer.data['id']
-            pregunta_serializer = PreguntaSerializer(pregunta['pregunta'])
+            pregunta_serializer = PreguntaSerializer(data = pregunta['pregunta'])
 
             if pregunta_serializer.is_valid():
                 pregunta_individual = Pregunta(
@@ -83,12 +82,13 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                     justificacion = pregunta_serializer.validated_data['justificacion']
                 )
                 preguntas_validas.append(pregunta_individual)
-                errores_pregunta[indice] = pregunta_serializer.errors
+                errores_preguntas[indice] = pregunta_serializer.errors
             else:
                 validar_errores = True
                 errores_preguntas[indice] = pregunta_serializer.errors
 
             #Enunciados pregunta
+            enunciado_pregunta_valida = []
             for indice_enunciado, enunciado_pregunta in enumerate(enunciados_pregunta):
                 enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(data = enunciado_pregunta)
                 if enunciado_pregunta_serializer.is_valid():
@@ -96,12 +96,12 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                         enunciado = enunciado_pregunta_serializer.validated_data['enunciado'],
                         pregunta = enunciado_pregunta_serializer.validated_data['pregunta']
                     )
-                    enunciados_pregunta_validas[indice].append(enunciado)
+                    enunciado_pregunta_valida.append(enunciado)
                     errores_enunciados_pregunta[indice_enunciado] = enunciado_pregunta_serializer.errors
                 else:
                     validar_errores = True
                     errores_enunciados_pregunta[indice_enunciado] = enunciado_pregunta_serializer.errors
-
+                enunciados_pregunta_validas.append(enunciado_pregunta_valida)
             errores_enunciados_pregunta[indice].append(errores_enunciados_pregunta)
 
             enunciados_pregunta = {}
