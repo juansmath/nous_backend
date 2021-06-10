@@ -18,6 +18,55 @@ class PreguntaViewSet(viewsets.ViewSet):
         else:
             return self.model.objects.filter(id = pk, estado = True)
 
+    def crear_enunciados_pregunta(self, enunciados=[]):
+        validar_errores = False
+        enunciados_validos = []
+        errores_enunciados = []
+
+        for enunciado in enunciados:
+            enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(data = enunciado)
+            if enunciado_pregunta_serializer.is_valid():
+                enunciado = EnunciadoPregunta(
+                    enunciado = enunciado_pregunta_serializer.validated_data['enunciado'],
+                    pregunta = enunciado_pregunta_serializer.validated_data['pregunta']
+                )
+                enunciados_validos.append(enunciado)
+                errores_enunciados.append(enunciado_pregunta_serializer.errors)
+            else:
+                validar_errores = True
+                errores_enunciados.append(enunciado_pregunta_serializer.errors)
+
+        return {
+            'validar_errores': validar_errores,
+            'enunciados_validos': enunciados_validos,
+            'errores_enunciados': errores_enunciados
+        }
+
+    def crear_opciones_pregunta(self, opciones=[]):
+        validar_errores = False
+        opciones_validas = []
+        errores_opciones = []
+
+        for opcion_pregunta in opciones:
+            opciones_pregunta_serializer = OpcionPreguntaSerializer(data = opcion_pregunta)
+            if opciones_pregunta_serializer.is_valid():
+                opcion = OpcionPregunta(
+                    contenido_opcion = opciones_pregunta_serializer.validated_data['contenido_opcion'],
+                    pregunta = opciones_pregunta_serializer.validated_data['pregunta'],
+                    letra = opciones_pregunta_serializer.validated_data['letra'],
+                )
+                opciones_validas.append(opcion)
+                errores_opciones.append(opciones_pregunta_serializer.errors)
+            else:
+                validar_errores = True
+                errores_opciones.append(opciones_pregunta_serializer.errors)
+
+        return {
+            'validar_errores': validar_errores,
+            'opciones_validas': opciones_validas,
+            'errores_opciones': errores_opciones
+        }
+
     def perform_destroy(self, instance):
         instance.delete()
 
@@ -69,35 +118,22 @@ class PreguntaViewSet(viewsets.ViewSet):
         error_pregunta = {'pregunta', error_pregunta}
         error.update(error_pregunta)
 
-        for indice, enunciado in enumerate(enunciados_pregunta):
-            enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(data = enunciado)
-            if enunciado_pregunta_serializer.is_valid():
-                enunciado = EnunciadoPregunta(
-                    enunciado = enunciado_pregunta_serializer.validated_data['enunciado'],
-                    pregunta = enunciado_pregunta_serializer.validated_data['pregunta']
-                )
-                enunciados_pregunta_validas.append(enunciado)
-                errores_enunciados[indice] = enunciado_pregunta_serializer.errors
-            else:
-                validar_errores = True
-                errores_enunciados[indice] = enunciado_pregunta_serializer.errors
+        #Creación de enunciados de acuerdo a la pregunta
+        if len(enunciados_pregunta) != 0:
+            datos_enunciado = self.crear_enunciados_pregunta(enunciados_pregunta)
+            errores_enunciados = datos_enunciado['errores_enunciados']
+            validar_errores = datos_enunciado['validar_errores']
+            enunciados_pregunta_validas = datos_enunciado['enunciados_validos']
 
-        errores_enunciados = {'enunciado': errores_enunciados}
+        errores_enunciados = {'enunciados': errores_enunciados}
         error.update(errores_enunciados)
 
-        for indice, opcion_pregunta in enumerate(opciones_pregunta):
-            opciones_pregunta_serializer = OpcionPreguntaSerializer(data = opcion_pregunta)
-            if opciones_pregunta_serializer.is_valid():
-                opcion = OpcionPregunta(
-                    contenido_opcion = opciones_pregunta_serializer.validated_data['contenido_opcion'],
-                    pregunta = opciones_pregunta_serializer.validated_data['pregunta'],
-                    letra = opciones_pregunta_serializer.validated_data['letra'],
-                )
-                opciones_pregunta_validas.append(opcion)
-                errores_opciones[indice] = opciones_pregunta_serializer.errors
-            else:
-                validar_errores = True
-                errores_opciones[indice] = opciones_pregunta_serializer.errors
+        #Creación de opciones para la pregunta
+        if len(opciones_pregunta) != 0:
+            datos_opcion = self.crear_opciones_pregunta(opciones_pregunta)
+            validar_errores = datos_opcion['validar_errores']
+            errores_opciones = datos_opcion['errores_opciones']
+            opciones_pregunta_validas = datos_opcion['opciones_validas']
 
         errores_opciones = {'opciones': errores_opciones}
         error.update(errores_opciones)
@@ -106,6 +142,7 @@ class PreguntaViewSet(viewsets.ViewSet):
             justificacion = Justificacion.objects.filter(id = justificacion_serializer.data['id'])
             if justificacion:
                 justificacion.delete()
+            return Response({'error':error}, status=status.HTTP_400_BAD_REQUEST)
 
         pregunta_serializer.save()
         pregunta = pregunta_serializer.data['id']
@@ -123,14 +160,16 @@ class PreguntaViewSet(viewsets.ViewSet):
 
     def update(self, request, *args, **kwargs):
         validar_errores = False
-        opciones_validas, enunciados_validos = [], []
-        errores_opciones, errores_justificacion, errores_enunciados, error_pregunta, error = {}, {}, {}, {}, {}
+        opciones_pregunta_validas, enunciados_pregunta_validas = [], []
+        errores_opciones, errores_opciones_editar, errores_justificacion, errores_enunciados, errores_enunciados_editar, error_pregunta, error = [], [], [], [], [], [], {}
 
         pregunta_actualizada = request.data['pregunta']
         justificacion = request.data['justificacion']
         editar_justificacion = request.data["editar_justificacion"]
+        opciones_pregunta = request.data['opciones_pregunta']
         opciones_pregunta_editar = request.data['opciones_pregunta_editar']
         opciones_pregunta_borrar = request.data['opciones_pregunta_borrar']
+        enunciados_pregunta = request.data['enunciados_pregunta']
         enunciados_pregunta_editar = request.data['enunciados_pregunta_editar']
         enunciados_pregunta_borrar = request.data['enunciados_pregunta_borrar']
 
@@ -142,10 +181,10 @@ class PreguntaViewSet(viewsets.ViewSet):
         pregunta_serializer = self.serializer_class(datos_pregunta, pregunta_actualizada)
 
         if pregunta_serializer.is_valid():
-            error_pregunta = pregunta_serializer.errors
+            error_pregunta.append(pregunta_serializer.errors)
         else:
             validar_errores = True
-            error_pregunta = pregunta_serializer.errors
+            error_pregunta.append(pregunta_serializer.errors)
 
         error_pregunta = {'pregunta': error_pregunta}
         error.update(error_pregunta)
@@ -157,57 +196,90 @@ class PreguntaViewSet(viewsets.ViewSet):
             if not datos_justificacion:
                 return Response({'error':'Esta Pregunta no tiene asociada ninguna justificación!'}, status=status.HTTP_400_BAD_REQUEST)
 
-        justificacion_serializer = JustificacionSerializer(datos_justificacion, justificacion)
-        if justificacion_serializer.is_valid():
-            errores_justificacion = justificacion_serializer.errors
-        else:
-            validar_errores = True
-            errores_justificacion = justificacion_serializer.errors
+            justificacion_serializer = JustificacionSerializer(datos_justificacion, justificacion)
+            if justificacion_serializer.is_valid():
+                errores_justificacion.append(justificacion_serializer.errors)
+            else:
+                validar_errores = True
+                errores_justificacion.append(justificacion_serializer.errors)
 
         errores_justificacion = {'justificacion': errores_justificacion}
         error.update(errores_justificacion)
 
         #validación de los enunciados para la pregunta
-        if len(enunciados_pregunta_editar) != 0:
-            for indice, enunciado in enumerate(enunciados_pregunta_editar):
-                datos_enunciado = EnunciadoPregunta.objects.filter(id = enunciado['id']).first()
-                enunciado_pregunta_serilizer = EnunciadoPreguntaSerializer(datos_enunciado, enunciado)
-                if enunciado_pregunta_serilizer.is_valid():
-                    enunciados_validos.append(enunciado)
-                    errores_enunciados[indice] = enunciado_pregunta_serilizer.errors
-                else:
-                    validar_errores = True
-                    errores_enunciados[indice] = enunciado_pregunta_serilizer.errors
+        if len(enunciados_pregunta) != 0:
+            datos_enunciado = self.crear_enunciados_pregunta(enunciados_pregunta)
+            errores_enunciados = datos_enunciado['errores_enunciados']
+            validar_errores = datos_enunciado['validar_errores']
+            enunciados_pregunta_validas = datos_enunciado['enunciados_validos']
 
         errores_enunciados = {'enunciados': errores_enunciados}
         error.update(errores_enunciados)
 
+        if len(enunciados_pregunta_editar) != 0:
+            for indice, enunciado in enumerate(enunciados_pregunta_editar):
+                datos_enunciado = EnunciadoPregunta.objects.filter(id = enunciado['id']).first()
+                enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(datos_enunciado, enunciado)
+                if enunciado_pregunta_serializer.is_valid():
+                    enunciado_pregunta_serializer.update(datos_enunciado, enunciado)
+                    errores_enunciados_editar.append(enunciado_pregunta_serializer.errors)
+                else:
+                    validar_errores = True
+                    errores_enunciados_editar.append(enunciado_pregunta_serializer.errors)
+
+        errores_enunciados_editar = {'enunciados_editar': errores_enunciados_editar}
+        error.update(errores_enunciados_editar)
+
         #validación de opciones para la pregunta
-        # OpcionPregunta.objects.filter(pregunta = data_pregunta.id)
+        if len(opciones_pregunta) != 0:
+            datos_opcion = self.crear_opciones_pregunta(opciones_pregunta)
+            validar_errores = datos_opcion['validar_errores']
+            errores_opciones = datos_opcion['errores_opciones']
+            opciones_pregunta_validas = datos_opcion['opciones_validas']
 
-        # for indice, opcion in enumerate(opciones_pregunta):
-        #     opcion_pregunta_serializer = OpcionPreguntaSerializer(data = opcion, context = data_pregunta.id)
-        #     if opcion_pregunta_serializer.is_valid():
-        #         OpcionPregunta.update_or_create(
-        #             contenido_opcion = opcion_pregunta_serializer.validated_data['contenido_opcion'],
-        #             pregunta = data_pregunta,
-        #             letra = opcion_pregunta_serializer.validated_data['letra'],
-        #             estado = True
-        #         )
-        #         errores_opciones[indice] = opcion_pregunta_serializer.errors
-        #     else:
-        #         validar_errores = True
-        #         errores_opciones[indice] = opcion_pregunta_serializer.errors
+        errores_opciones = {'opciones': errores_opciones}
+        error.update(errores_opciones)
 
-        # errores_opciones = {'opciones', errores_opciones}
-        # error.update(errores_opciones)
-        print(enunciados_validos)
+        if len(opciones_pregunta_editar) != 0:
+            for indice, opcion in enumerate(opciones_pregunta_editar):
+                datos_opcion = OpcionPregunta.objetcs.filter(id = opcion['id']).first()
+                opcion_pregunta_serializer = OpcionPreguntaSerializer(datos_opcion, opcion)
+                if opcion_pregunta_serializer.is_valid():
+                    opcion_pregunta_serializer.update(datos_opcion, opcion)
+                    errores_opciones_editar.append(opcion_pregunta_serializer.errors)
+                else:
+                    validar_errores = True
+                    errores_opciones_editar.append(opcion_pregunta_serializer.errors)
+
+        errores_opciones_editar = {'opciones_editar': errores_opciones_editar}
+        error.update(errores_opciones_editar)
+
         if validar_errores:
             return Response({'mensaje':'Ha ocurrido un error al actualizar la pregunta','error': error}, status = status.HTTP_400_BAD_REQUEST)
 
+        if len(enunciados_pregunta_borrar) != 0:
+            for enunciado in enunciados_pregunta_borrar:
+                EnunciadoPregunta.objects.filter(id = enunciado['id']).delete()
+
+        if len(opciones_pregunta_borrar) != 0:
+            for opcion in opciones_pregunta_borrar:
+                OpcionPregunta.objects.filter(id=opcion['id']).delete()
+
+        pregunta_serializer.update(datos_pregunta, pregunta_actualizada)
+        pregunta = pregunta_serializer.data['id']
+
+        for enunciado in enunciados_pregunta_validas:
+            enunciado.pregunta = pregunta
+
+        for opcion in opciones_pregunta_validas:
+            opcion.pregunta = pregunta
+
+        EnunciadoPregunta.objects.bulk_create(enunciados_pregunta_validas)
+        OpcionPregunta.objects.bulk_create(opciones_pregunta_validas)
+
         return Response({'mensaje':'La pregunta se ha actualizado correctamente!'}, status = status.HTTP_201_CREATED)
 
-    def retrieve(self, request, format = None, pk = None):
+    def retrieve(self, request, *args, **kwargs):
         pregunta = Pregunta.objects.filter(id = self.kwargs['pk'], estado = True).first()
         if pregunta:
             data = PreguntaDetalleSerializer(pregunta)
