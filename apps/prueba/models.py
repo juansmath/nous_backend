@@ -49,6 +49,7 @@ class Competencia(BaseModel):
         return self.nombre_competencia
 
 class GrupoPregunta(BaseModel):
+    nombre_grupo = models.CharField('Nombre del grupo', max_length=200, blank=False, null=False)
     cantidad_preguntas = models.PositiveSmallIntegerField('Cantidad maxíma de preguntas', null = False, blank = False, unique = True)
     # historial = HistoricalRecords()
 
@@ -61,13 +62,13 @@ class GrupoPregunta(BaseModel):
     #     self.changed_by = value
 
     class Meta:
-        ordering = ['cantidad_preguntas']
+        ordering = ['nombre_grupo']
         verbose_name = 'Grupo de preguntas'
         verbose_name_plural = 'Grupos de pregusntas'
 
 class EnunciadoGrupoPregunta(BaseModel):
     enunciado_general = models.TextField('Enunciado general del grupo de preguntas', null = False, blank = False, unique = True)
-    grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE)
+    grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE, blank=True, null=True)
     # historial = HistoricalRecords()
 
     # @property

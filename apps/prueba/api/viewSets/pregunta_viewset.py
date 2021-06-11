@@ -26,12 +26,11 @@ class PreguntaViewSet(viewsets.ViewSet):
         for enunciado in enunciados:
             enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(data = enunciado)
             if enunciado_pregunta_serializer.is_valid():
-                enunciado = EnunciadoPregunta(
+                enunciado_valido = EnunciadoPregunta(
                     enunciado = enunciado_pregunta_serializer.validated_data['enunciado'],
                     pregunta = enunciado_pregunta_serializer.validated_data['pregunta']
                 )
-                enunciados_validos.append(enunciado)
-                errores_enunciados.append(enunciado_pregunta_serializer.errors)
+                enunciados_validos.append(enunciado_valido)
             else:
                 validar_errores = True
                 errores_enunciados.append(enunciado_pregunta_serializer.errors)
@@ -56,7 +55,6 @@ class PreguntaViewSet(viewsets.ViewSet):
                     letra = opciones_pregunta_serializer.validated_data['letra'],
                 )
                 opciones_validas.append(opcion)
-                errores_opciones.append(opciones_pregunta_serializer.errors)
             else:
                 validar_errores = True
                 errores_opciones.append(opciones_pregunta_serializer.errors)
@@ -78,7 +76,7 @@ class PreguntaViewSet(viewsets.ViewSet):
     def create(self, request, *args, **kwargs):
         validar_errores = False
         opciones_pregunta_validas, enunciados_pregunta_validas = [], []
-        errores_opciones, errores_justificacion, errores_enunciados, error_pregunta, error = {}, {}, {}, {}, {}
+        errores_opciones, errores_justificacion, errores_enunciados, error_pregunta, error = [], [], [], [], {}
 
         pregunta = request.data['pregunta']
 
@@ -93,11 +91,9 @@ class PreguntaViewSet(viewsets.ViewSet):
         data_pregunta = pregunta['pregunta']
 
         justificacion_serializer = JustificacionSerializer(data = justificacion_pregunta)
-        if justificacion_serializer.is_valid():
-            errores_justificacion = justificacion_serializer.errors
-        else:
+        if justificacion_serializer.is_valid() != True:
             validar_errores = True
-            errores_justificacion = justificacion_serializer.errors
+            errores_justificacion.append(justificacion_serializer.errors)
 
         if validar_errores:
             errores_justificacion = {'justificacion': errores_justificacion}
@@ -109,11 +105,9 @@ class PreguntaViewSet(viewsets.ViewSet):
         data_pregunta['justificacion_id'] = justificacion_serializer.data
 
         pregunta_serializer = self.serializer_class(data = data_pregunta)
-        if pregunta_serializer.is_valid():
-            error_pregunta = pregunta_serializer.errors
-        else:
+        if pregunta_serializer.is_valid() != True:
             validar_errores = True
-            error_pregunta = pregunta_serializer.errors
+            error_pregunta.append(pregunta_serializer.errors)
 
         error_pregunta = {'pregunta', error_pregunta}
         error.update(error_pregunta)

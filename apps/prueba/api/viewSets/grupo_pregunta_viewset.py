@@ -13,6 +13,115 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
     model = GrupoPregunta
     serializer_class = GrupoPreguntaSerializer
 
+    def crear_enunciados_pregunta(self, enunciados=[]):
+        validar_errores = False
+        enunciados_validos = []
+        errores_enunciados = []
+
+        for enunciado in enunciados:
+            enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(data = enunciado)
+            if enunciado_pregunta_serializer.is_valid():
+                enunciado_valido = EnunciadoPregunta(
+                    enunciado = enunciado_pregunta_serializer.validated_data['enunciado'],
+                    pregunta = enunciado_pregunta_serializer.validated_data['pregunta']
+                )
+                enunciados_validos.append(enunciado_valido)
+                errores_enunciados.append(enunciado_pregunta_serializer.errors)
+            else:
+                validar_errores = True
+                errores_enunciados.append(enunciado_pregunta_serializer.errors)
+
+        return {
+            'validar_errores': validar_errores,
+            'enunciados_validos': enunciados_validos,
+            'errores_enunciados': errores_enunciados
+        }
+
+    def crear_opciones_pregunta(self, opciones=[]):
+        validar_errores = False
+        opciones_validas = []
+        errores_opciones = []
+
+        for opcion_pregunta in opciones:
+            opciones_pregunta_serializer = OpcionPreguntaSerializer(data = opcion_pregunta)
+            if opciones_pregunta_serializer.is_valid():
+                opcion = OpcionPregunta(
+                    contenido_opcion = opciones_pregunta_serializer.validated_data['contenido_opcion'],
+                    pregunta = opciones_pregunta_serializer.validated_data['pregunta'],
+                    letra = opciones_pregunta_serializer.validated_data['letra'],
+                )
+                opciones_validas.append(opcion)
+                errores_opciones.append(opciones_pregunta_serializer.errors)
+            else:
+                validar_errores = True
+                errores_opciones.append(opciones_pregunta_serializer.errors)
+
+        return {
+            'validar_errores': validar_errores,
+            'opciones_validas': opciones_validas,
+            'errores_opciones': errores_opciones
+        }
+
+    def crear_enunciados_grupo_pregunta(self, enunciados_grupo_pregunta=[]):
+        validar_errores = False
+        enunciados_grupo_pregunta_validos = []
+        errores_enunciados_grupo_pregunta = []
+
+        for enunciado in enunciados_grupo_pregunta:
+            enunciados_grupo_pregunta_serializer = EnunciadoGrupoPreguntaSerializer(data=enunciado)
+            if enunciados_grupo_pregunta_serializer.is_valid():
+                enunciado_valido = EnunciadoGrupoPregunta(
+                    enunciado_general = enunciados_grupo_pregunta_serializer.validated_data['enunciado_general'],
+                    grupo = enunciados_grupo_pregunta_serializer.validated_data['grupo']
+                )
+                enunciados_grupo_pregunta_validos.append(enunciado_valido)
+            else:
+                validar_errores = True
+                errores_enunciados_grupo_pregunta.append(enunciados_grupo_pregunta_serializer.errors)
+
+        return {
+            'validar_errores':validar_errores,
+            'enunciados_grupo_pregunta_validos': enunciados_grupo_pregunta_validos,
+            'errores_enunciados_grupo_pregunta': errores_enunciados_grupo_pregunta
+        }
+
+    def crear_justificacion_pregunta(self, justificacion={}):
+        validar_errores = False
+        errores_justificacion = []
+
+        justificacion_serializer = JustificacionSerializer(data=justificacion)
+        if justificacion_serializer.is_valid() != True:
+            validar_errores = True
+            errores_justificacion.append(justificacion_serializer.errors)
+
+        return {
+            'validar_errores': validar_errores,
+            'errores_justificacion': errores_justificacion,
+            'justificacion': justificacion_serializer
+        }
+
+    def crear_pregunta(self, pregunta={}):
+        validar_errores = False
+        errores_pregunta = []
+        pregunta_valida = {}
+
+        pregunta_serializer = PreguntaSerializer(data=pregunta)
+        if pregunta_serializer.is_valid():
+            pregunta_valida = Pregunta(
+                grupo = pregunta_serializer.validated_data['grupo'],
+                respuesta = pregunta_serializer.validated_data['respuesta'],
+                justificacion = pregunta_serializer.validated_data['justificacion']
+            )
+        else:
+            validar_errores = True
+            errores_pregunta.append(pregunta_serializer.errors)
+
+        return {
+            'validar_errores': validar_errores,
+            'errores_pregunta': errores_pregunta,
+            'pregunta': pregunta_valida
+        }
+
     def get_queryset(self, pk = None):
         if pk is None:
             return self.model.objects.filter(estado = True)
@@ -26,16 +135,14 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
     def create(self, request):
         validar_errores = False
+        justificaciones_creadas = []
         preguntas_validas, enunciados_pregunta_validas, opciones_pregunta_validas, enunciados_grupo_pregunta_validas = [], [], [], []
         (errores_grupo_pregunta, errores_enunciados_grupo_pregunta, errores_preguntas,
-            errores_enunciados_pregunta, errores_opciones_pregunta, errores_justificacion, error) = {}, {}, {}, {}, {}, {}, {}
+            errores_enunciados_pregunta, errores_opciones_pregunta, errores_justificacion, error) = [], [], [], [], [], [], {}
 
         grupo_preguntas = request.data['grupo_preguntas']
-        enunciados_grupo_pregunta = grupo_preguntas['enunciados_grupo_pregunta']
-        preguntas = grupo_preguntas['preguntas']
-
-        del grupo_preguntas['enunciados_grupo_pregunta']
-        del grupo_preguntas['preguntas']
+        enunciados_grupo_pregunta = request.data['enunciados_grupo_pregunta']
+        preguntas = request.data['preguntas']
 
         data_grupo_pregunta = grupo_preguntas['grupo_preguntas']
 
@@ -52,85 +159,55 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
         #Pregunta
         for indice, pregunta in enumerate(preguntas):
-            justificacion = pregunta['justificacion']
-            enunciados_pregunta = pregunta['enunciados_pregunta']
-            opciones_pregunta = pregunta['opciones_pregunta']
+            #Valdiaciones para la justificación
+            datos_justificacion = self.crear_justificacion_pregunta(pregunta['justificacion'])
+            if datos_justificacion['validar_errores'] != True:
+                datos_justificacion['justificacion'].save()
+                justificaciones_creadas.append({id:datos_justificacion['justificacion'].data['id']})
+            else:
+                validar_errores: datos_justificacion['validar_errores']
+                errores_justificacion.append({
+                    'justificacion':datos_justificacion['errores_justificacion'],
+                    'indice':indice
+                })
 
-            justificacion_serializer = JustificacionSerializer(data = justificacion)
-            if justificacion_serializer.is_valid():
-                errores_justificacion[indice] = justificacion_serializer.errors
+            if datos_justificacion['justificacion'].data['id'] != None:
+                pregunta['justificacion_id'] = datos_justificacion['justificacion'].data['id']
+
+            #validaciones para la pregunta
+            datos_crear_pregunta = self.crear_pregunta(pregunta['pregunta'])
+            if datos_crear_pregunta['validar_errores'] != True:
+                preguntas_validas.append(datos_crear_pregunta['pregunta'])
             else:
                 validar_errores = True
-                errores_justificacion[indice] = justificacion_serializer.errores
+                errores_preguntas.append({
+                    'pregunta': datos_crear_pregunta['errores_pregunta'],
+                    'indice': indice
+                })
 
-            if validar_errores:
-                errores_justificacion = {'justificacion': errores_justificacion}
-                error.update(errores_justificacion)
-
-            error.update(errores_justificacion)
-            justificacion = {}
-
-            justificacion_serializer.save()
-
-            pregunta['pregunta']['justificacion'] = justificacion_serializer.data['id']
-            pregunta_serializer = PreguntaSerializer(data = pregunta['pregunta'])
-
-            if pregunta_serializer.is_valid():
-                pregunta_individual = Pregunta(
-                    grupo = pregunta_serializer.validated_data['grupo'],
-                    respuesta = pregunta_serializer.validated_data['respuesta'],
-                    justificacion = pregunta_serializer.validated_data['justificacion']
-                )
-                preguntas_validas.append(pregunta_individual)
-                errores_preguntas[indice] = pregunta_serializer.errors
+            #Validaciones para opciones de la pregunta
+            datos_crear_opciones_pregunta = self.crear_opciones_pregunta(pregunta['opciones_pregunta'])
+            if datos_crear_opciones_pregunta['validar_errores'] != True:
+                opciones_pregunta_validas.append(datos_crear_opciones_pregunta['opciones_validas'])
             else:
                 validar_errores = True
-                errores_preguntas[indice] = pregunta_serializer.errors
+                errores_opciones_pregunta.append({
+                    'opciones': datos_crear_opciones_pregunta['errores_opciones'],
+                    'inidice': indice
+                })
 
-            #Enunciados pregunta
-            enunciado_pregunta_valida = []
-            for indice_enunciado, enunciado_pregunta in enumerate(enunciados_pregunta):
-                enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(data = enunciado_pregunta)
-                if enunciado_pregunta_serializer.is_valid():
-                    enunciado = EnunciadoPregunta(
-                        enunciado = enunciado_pregunta_serializer.validated_data['enunciado'],
-                        pregunta = enunciado_pregunta_serializer.validated_data['pregunta']
-                    )
-                    enunciado_pregunta_valida.append(enunciado)
-                    errores_enunciados_pregunta[indice_enunciado] = enunciado_pregunta_serializer.errors
-                else:
-                    validar_errores = True
-                    errores_enunciados_pregunta[indice_enunciado] = enunciado_pregunta_serializer.errors
-                enunciados_pregunta_validas.append(enunciado_pregunta_valida)
-            errores_enunciados_pregunta[indice].append(errores_enunciados_pregunta)
+            #Validaciones para enunciados de la pregunta
+            datos_crear_enunciado_pregunta = self.crear_enunciados_grupo_pregunta(pregunta['enunciados_pregunta'])
+            if datos_crear_enunciado_pregunta['validar_errores'] != True:
+                enunciados_pregunta_validas.append(datos_crear_enunciado_pregunta['enunciados_validos'])
+            else:
+                validar_errores = True
+                errores_enunciados_pregunta.append({
+                    'enunciados':datos_crear_enunciado_pregunta['errores_enunciados'],
+                    'indice': indice
+                })
 
-            enunciados_pregunta = {}
-
-            #Opciones pregunta
-            for indice_opcion, opcion_pregunta in enumerate(opciones_pregunta):
-                opcion_pregunta_serializer = OpcionPreguntaSerializer(data = opcion_pregunta)
-                if opcion_pregunta_serializer.is_valid():
-                    opcion = OpcionPregunta(
-                        contenido_opcion = opcion_pregunta_serializer.validated_data['contenido_opcion'],
-                        pregunta = opcion_pregunta_serializer.validated_data['pregunta'],
-                        letra = opcion_pregunta_serializer.validated_data['letra'],
-                    )
-                    opciones_pregunta_validas[indice_opcion].append(opcion)
-                    errores_opciones_pregunta[indice_opcion] = opcion_pregunta_serializer.errors
-                else:
-                    validar_errores = True
-                    errores_opciones_pregunta[indice_opcion] = opcion_pregunta_serializer.errors
-
-            errores_opciones_pregunta[indice].append(errores_opciones_pregunta)
-
-            opciones_pregunta = {}
-
-            if validar_errores:
-                justificacion = Justificacion.objects.filter(id = justificacion_serializer.data['id'])
-                if justificacion:
-                    justificacion.delete()
-
-        errores_pregunta = {'pregunta', errores_preguntas}
+        errores_pregunta = {'preguntas', errores_preguntas}
         error.update(errores_pregunta)
 
         errores_enunciados_pregunta = {'enunciados_pregunta', errores_enunciados_pregunta}
@@ -139,23 +216,19 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         errores_opciones_pregunta = {'opciones_pregunta', errores_opciones_pregunta}
         error.update(errores_opciones_pregunta)
 
-        for indice, enunciado_grupo in enumerate(enunciados_grupo_pregunta):
-            enunciados_grupo_pregunta_serializer = EnunciadoGrupoPreguntaSerializer(data = enunciado_grupo)
-            if enunciados_grupo_pregunta_serializer.is_valid():
-                enunciado = EnunciadoGrupoPregunta(
-                    enunciado_general = enunciados_grupo_pregunta_serializer.validated_data['enunciado_general'],
-                    grupo_pregunta = enunciados_grupo_pregunta_serializer.validated_data['grupo_pregunta']
-                )
-                errores_enunciados_grupo_pregunta = enunciados_grupo_pregunta_serializer.errors
-            else:
-                validar_errores = True
-                errores_enunciados_grupo_pregunta = enunciados_grupo_pregunta_serializer.errors
+        #Enunciados grupo pregunta
+        datos_crear_enuciados_grupo_pregunta = self.crear_enunciados_grupo_pregunta(enunciados_grupo_pregunta)
+        if datos_crear_enuciados_grupo_pregunta['validar_errores'] != True:
+            enunciados_grupo_pregunta_validas.append(datos_crear_enuciados_grupo_pregunta['enunciados_validos'])
+        else:
+            validar_errores = True
+            errores_enunciados_grupo_pregunta.append(datos_crear_enuciados_grupo_pregunta['errores_enunciados'])
 
         errores_enunciados_grupo_pregunta = {'enunciados_grupo_pregunta': errores_enunciados_grupo_pregunta}
         error.update(errores_enunciados_grupo_pregunta)
 
         if validar_errores:
-            return Response({'error', error}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({'error':error}, status = status.HTTP_400_BAD_REQUEST)
 
         #Grupo Preguntas
         grupo_preguntas_serializer.save()
@@ -165,26 +238,5 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             enunciado_grupo.grupo = datos_grupo
 
         EnunciadoGrupoPregunta.objects.bulk_create(enunciados_grupo_pregunta_validas)
-
-        #Guardando las preguntas
-        for indice, pregunta in enumerate(preguntas_validas):
-            pregunta.grupo = datos_grupo
-            pregunta_serializer = PreguntaSerializer(pregunta)
-            pregunta_serializer.save()
-
-            datos_pregunta = Pregunta.objects.filter(id = pregunta_serializer.data['id']).first()
-
-            #enunciados pregunta
-            for enunciado in enunciados_pregunta_validas[indice]:
-                enunciado.pregunta = datos_pregunta
-
-            #opciones pregunta
-            for opcion in opciones_pregunta_validas[indice]:
-                opcion.pregunta = datos_pregunta
-
-            EnunciadoPregunta.objects.bulk_create(enunciados_pregunta_validas)
-            OpcionPregunta.objects.bulk_create(opciones_pregunta_validas)
-
-            datos_pregunta = {}
 
         return Response({'mensaje':'Se ha registrado correctamente el grupo de preguntas'}, status = status.HTTP_201_CREATED)
