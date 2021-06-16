@@ -65,9 +65,6 @@ class PreguntaViewSet(viewsets.ViewSet):
             'errores_opciones': errores_opciones
         }
 
-    def perform_destroy(self, instance):
-        instance.delete()
-
     def list(self, request):
         data = self.get_queryset()
         data = PreguntaSerializer(data, many = True)
@@ -80,15 +77,13 @@ class PreguntaViewSet(viewsets.ViewSet):
 
         pregunta = request.data['pregunta']
 
-        justificacion_pregunta = pregunta['justificacion']
-        enunciados_pregunta = pregunta['enunciados_pregunta']
-        opciones_pregunta = pregunta['opciones_pregunta']
+        justificacion_pregunta = request.data['justificacion']
+        enunciados_pregunta = request.data['enunciados_pregunta']
+        opciones_pregunta = request.data['opciones_pregunta']
 
         del pregunta['justificacion']
         del pregunta['enunciados_pregunta']
         del pregunta['opciones_pregunta']
-
-        data_pregunta = pregunta['pregunta']
 
         justificacion_serializer = JustificacionSerializer(data = justificacion_pregunta)
         if justificacion_serializer.is_valid() != True:
@@ -102,9 +97,9 @@ class PreguntaViewSet(viewsets.ViewSet):
 
         error.update(errores_justificacion)
         justificacion_serializer.save()
-        data_pregunta['justificacion_id'] = justificacion_serializer.data
+        pregunta['justificacion'] = justificacion_serializer.data
 
-        pregunta_serializer = self.serializer_class(data = data_pregunta)
+        pregunta_serializer = self.serializer_class(data = pregunta)
         if pregunta_serializer.is_valid() != True:
             validar_errores = True
             error_pregunta.append(pregunta_serializer.errors)
@@ -133,9 +128,7 @@ class PreguntaViewSet(viewsets.ViewSet):
         error.update(errores_opciones)
 
         if validar_errores:
-            justificacion = Justificacion.objects.filter(id = justificacion_serializer.data['id'])
-            if justificacion:
-                justificacion.delete()
+            justificacion = Justificacion.objects.filter(id = justificacion_serializer.data['id']).delete()
             return Response({'error':error}, status=status.HTTP_400_BAD_REQUEST)
 
         pregunta_serializer.save()
@@ -216,7 +209,6 @@ class PreguntaViewSet(viewsets.ViewSet):
                 enunciado_pregunta_serializer = EnunciadoPreguntaSerializer(datos_enunciado, enunciado)
                 if enunciado_pregunta_serializer.is_valid():
                     enunciado_pregunta_serializer.update(datos_enunciado, enunciado)
-                    errores_enunciados_editar.append(enunciado_pregunta_serializer.errors)
                 else:
                     validar_errores = True
                     errores_enunciados_editar.append(enunciado_pregunta_serializer.errors)
@@ -240,7 +232,6 @@ class PreguntaViewSet(viewsets.ViewSet):
                 opcion_pregunta_serializer = OpcionPreguntaSerializer(datos_opcion, opcion)
                 if opcion_pregunta_serializer.is_valid():
                     opcion_pregunta_serializer.update(datos_opcion, opcion)
-                    errores_opciones_editar.append(opcion_pregunta_serializer.errors)
                 else:
                     validar_errores = True
                     errores_opciones_editar.append(opcion_pregunta_serializer.errors)

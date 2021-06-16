@@ -50,7 +50,7 @@ class Competencia(BaseModel):
 
 class GrupoPregunta(BaseModel):
     nombre_grupo = models.CharField('Nombre del grupo', max_length=200, blank=False, null=False)
-    cantidad_preguntas = models.PositiveSmallIntegerField('Cantidad maxíma de preguntas', null = False, blank = False, unique = True)
+    cantidad_preguntas = models.PositiveSmallIntegerField('Cantidad maxíma de preguntas', null = False, blank = False)
     # historial = HistoricalRecords()
 
     # @property
