@@ -42,19 +42,19 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         opciones_validas = []
         errores_opciones = []
 
-        for opcion_pregunta in opciones:
-            opciones_pregunta_serializer = OpcionPreguntaSerializer(data = opcion_pregunta)
+        for opcion in opciones:
+            opciones_pregunta_serializer = OpcionPreguntaSerializer(data = opcion)
             if opciones_pregunta_serializer.is_valid():
-                opcion = OpcionPregunta(
+                opcion_valida = OpcionPregunta(
                     contenido_opcion = opciones_pregunta_serializer.validated_data['contenido_opcion'],
                     pregunta = opciones_pregunta_serializer.validated_data['pregunta'],
                     letra = opciones_pregunta_serializer.validated_data['letra'],
                 )
-                opciones_validas.append(opcion)
+                opciones_validas.append(opcion_valida)
             else:
                 validar_errores = True
                 errores_opciones.append(opciones_pregunta_serializer.errors)
-        print(opciones_validas)
+
         return {
             'validar_errores': validar_errores,
             'opciones_validas': opciones_validas,
@@ -263,11 +263,11 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
         datos_opciones = []
         for indice, pregunta in enumerate(preguntas_creadas):
-            if opciones_pregunta_validas[indice] == indice:
+            if opciones_pregunta_validas[indice]['pregunta'] == indice:
                 for opcion in opciones_pregunta_validas[indice]['opciones']:
                     opcion.pregunta = pregunta
                     datos_opciones.append(opcion)
-        print(datos_opciones)
+
         OpcionPregunta.objects.bulk_create(datos_opciones)
 
         return Response({'mensaje':'Se ha registrado correctamente el grupo de preguntas'}, status = status.HTTP_201_CREATED)
