@@ -81,10 +81,6 @@ class PreguntaViewSet(viewsets.ViewSet):
         enunciados_pregunta = request.data['enunciados_pregunta']
         opciones_pregunta = request.data['opciones_pregunta']
 
-        del pregunta['justificacion']
-        del pregunta['enunciados_pregunta']
-        del pregunta['opciones_pregunta']
-
         justificacion_serializer = JustificacionSerializer(data = justificacion_pregunta)
         if justificacion_serializer.is_valid() != True:
             validar_errores = True
@@ -161,7 +157,6 @@ class PreguntaViewSet(viewsets.ViewSet):
         enunciados_pregunta_borrar = request.data['enunciados_pregunta_borrar']
 
         datos_pregunta = self.model.objects.filter(id = kwargs['pk']).first()
-        print(datos_pregunta)
         if not datos_pregunta:
             return Response({'error', 'No existe una pregunta con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
 
@@ -178,7 +173,6 @@ class PreguntaViewSet(viewsets.ViewSet):
 
         #Validación de justificacion
         if(editar_justificacion):
-            print("listo para editar la justificacion")
             datos_justificacion = Justificacion.objects.filter(id = pregunta_serializer.data['justificacion']).first()
             if not datos_justificacion:
                 return Response({'error':'Esta Pregunta no tiene asociada ninguna justificación!'}, status=status.HTTP_400_BAD_REQUEST)
