@@ -126,8 +126,8 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
     def crear_multiples_preguntas(self,preguntas=[]):
         validar_errores = False
-        justificaciones_creadas =[]
-        preguntas_validas, enunciados_pregunta_validas, opciones_pregunta_validas, enunciados_grupo_pregunta_validas = [], [], [], []
+        justificaciones_creadas = []
+        preguntas_validas, enunciados_pregunta_validas, opciones_pregunta_validas = [], [], []
         errores_preguntas, errores_enunciados_pregunta, errores_opciones_pregunta, errores_justificacion = [], [], [], []
 
         for indice, pregunta in enumerate(preguntas):
@@ -141,7 +141,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                 validar_errores: datos_justificacion['validar_errores']
                 errores_justificacion.append({
                     'justificacion':datos_justificacion['errores_justificacion'],
-                    'pregunta':indice
+                    'indice_pregunta':indice
                 })
 
             #validaciones para la pregunta
@@ -157,13 +157,13 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             if datos_crear_opciones_pregunta['validar_errores'] != True:
                 opciones_pregunta_validas.append({
                     'opciones': datos_crear_opciones_pregunta['opciones_validas'],
-                    'pregunta': indice
+                    'indice_pregunta': indice
                 })
             else:
                 validar_errores = True
                 errores_opciones_pregunta.append({
                     'opciones': datos_crear_opciones_pregunta['errores_opciones'],
-                    'pregunta': indice
+                    'indice_pregunta': indice
                 })
 
             #Validaciones para enunciados de la pregunta
@@ -171,14 +171,26 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             if datos_crear_enunciado_pregunta['validar_errores'] != True:
                 enunciados_pregunta_validas.append({
                     'enunciados': datos_crear_enunciado_pregunta['enunciados_validos'],
-                    'pregunta': indice
+                    'indice_pregunta': indice
                 })
             else:
                 validar_errores = True
                 errores_enunciados_pregunta.append({
                     'enunciados':datos_crear_enunciado_pregunta['errores_enunciados'],
-                    'pregunta': indice
+                    'indice_pregunta': indice
                 })
+
+        return {
+            'validar_errores': validar_errores,
+            'justificaciones_creadas': justificaciones_creadas,
+            'preguntas_validas': preguntas_validas,
+            'enunciados_pregunta_validas': enunciados_pregunta_validas,
+            'opciones_pregunta_validas': opciones_pregunta_validas,
+            'errores_preguntas': errores_preguntas,
+            'errores_enunciados_pregunta': errores_enunciados_pregunta,
+            'errores_opciones_pregunta': errores_opciones_pregunta,
+            'errores_justificacion': errores_justificacion
+        }
 
     def get_queryset(self, pk = None):
         if pk is None:
@@ -214,62 +226,25 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         errores_grupo_pregunta = {'grupo_preguntas': errores_grupo_pregunta}
         error.update(errores_grupo_pregunta)
 
-        #Pregunta
-        for indice, pregunta in enumerate(preguntas):
-            #Valdiaciones para la justificación
-            datos_justificacion = self.crear_justificacion_pregunta(pregunta['justificacion'])
-            if datos_justificacion['validar_errores'] != True:
-                datos_justificacion['justificacion'].save()
-                pregunta['pregunta']["justificacion"] = datos_justificacion['justificacion'].data['id']
-                justificaciones_creadas.append({"id":datos_justificacion['justificacion'].data['id']})
-            else:
-                validar_errores: datos_justificacion['validar_errores']
-                errores_justificacion.append({
-                    'justificacion':datos_justificacion['errores_justificacion'],
-                    'pregunta':indice
-                })
+        #Preguntas
+        if len(preguntas) != 0:
+            datos_preguntas = self.crear_multiples_preguntas(preguntas)
+            preguntas_validas = datos_preguntas['preguntas_validas']
+            opciones_pregunta_validas = datos_preguntas['opciones_pregunta_validas']
+            enunciados_pregunta_validas = datos_preguntas['enunciados_pregunta_validas']
+            justificaciones_creadas = datos_preguntas['justificaciones_creadas']
 
-            #validaciones para la pregunta
-            datos_crear_pregunta = self.crear_pregunta(pregunta['pregunta'])
-            if datos_crear_pregunta['validar_errores'] != True:
-                preguntas_validas.append(datos_crear_pregunta['pregunta_valida'])
-            else:
-                validar_errores = True
-                errores_preguntas.append(datos_crear_pregunta['errores_pregunta'])
-
-            # Validaciones para opciones de la pregunta
-            datos_crear_opciones_pregunta = self.crear_opciones_pregunta(pregunta['opciones_pregunta'])
-            if datos_crear_opciones_pregunta['validar_errores'] != True:
-                opciones_pregunta_validas.append({
-                    'opciones': datos_crear_opciones_pregunta['opciones_validas'],
-                    'pregunta': indice
-                })
-            else:
-                validar_errores = True
-                errores_opciones_pregunta.append({
-                    'opciones': datos_crear_opciones_pregunta['errores_opciones'],
-                    'pregunta': indice
-                })
-
-            #Validaciones para enunciados de la pregunta
-            datos_crear_enunciado_pregunta = self.crear_enunciados_pregunta(pregunta['enunciados_pregunta'])
-            if datos_crear_enunciado_pregunta['validar_errores'] != True:
-                enunciados_pregunta_validas.append({
-                    'enunciados': datos_crear_enunciado_pregunta['enunciados_validos'],
-                    'pregunta': indice
-                })
-            else:
-                validar_errores = True
-                errores_enunciados_pregunta.append({
-                    'enunciados':datos_crear_enunciado_pregunta['errores_enunciados'],
-                    'pregunta': indice
-                })
+            validar_errores = datos_preguntas['validar_errores']
+            errores_preguntas = datos_preguntas['errores_preguntas']
+            errores_enunciados_pregunta = datos_preguntas['errores_enunciados_pregunta']
+            errores_opciones_pregunta = datos_preguntas['errores_opciones_pregunta']
+            errores_justificacion = datos_preguntas['errores_justificacion']
 
         errores_justificacion = {'justificacions': errores_justificacion}
         error.update(errores_justificacion)
 
-        errores_pregunta = {'preguntas': errores_preguntas}
-        error.update(errores_pregunta)
+        errores_preguntas = {'preguntas': errores_preguntas}
+        error.update(errores_preguntas)
 
         errores_enunciados_pregunta = {'enunciados_pregunta': errores_enunciados_pregunta}
         error.update(errores_enunciados_pregunta)
@@ -314,7 +289,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         #Registro masivo de enunciados pregunta
         datos_enunciados = []
         for indice, pregunta in enumerate(preguntas_creadas):
-            if enunciados_pregunta_validas[indice]['pregunta'] == indice:
+            if enunciados_pregunta_validas[indice]['indice_pregunta'] == indice:
                 for enunciado in enunciados_pregunta_validas[indice]['enunciados']:
                     enunciado.pregunta = pregunta
                     datos_enunciados.append(enunciado)
@@ -323,7 +298,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
         datos_opciones = []
         for indice, pregunta in enumerate(preguntas_creadas):
-            if opciones_pregunta_validas[indice]['pregunta'] == indice:
+            if opciones_pregunta_validas[indice]['indice_pregunta'] == indice:
                 for opcion in opciones_pregunta_validas[indice]['opciones']:
                     opcion.pregunta = pregunta
                     datos_opciones.append(opcion)
@@ -334,11 +309,14 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
     def update(self, request, *args, **kwargs):
         validar_errores = False
-        justificaciones_creadas, justificaciones_actualizar = [], []
-        (preguntas_validas, enunciados_pregunta_validas, opciones_pregunta_validas,
-            enunciados_grupo_pregunta_validas) = [], [], [], []
+
+        (justificaciones_creadas, preguntas_validas, enunciados_pregunta_validas,
+            enunciados_pregunta_validas_nuevas, opciones_pregunta_validas,
+            opciones_pregunta_validas_nuevas, enunciados_grupo_pregunta_validas) = [], [], [], [], [], [], []
+
         (errores_grupo_pregunta, errores_enunciados_grupo_pregunta, errores_preguntas,
-            errores_enunciados_pregunta, errores_opciones_pregunta, errores_justificacion, error) = [], [], [], [], [], [], {}
+            errores_enunciados_pregunta, errores_enunciados_pregunta_editar, errores_opciones_pregunta,
+            errores_opciones_pregunta_editar, errores_justificacion, error) = [], [], [], [], [], [], [], [], {}
 
         grupo_preguntas = request.data['grupo_preguntas']
         enunciados_grupo_pregunta = request.data['enunciados_grupo_pregunta']
@@ -381,6 +359,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         errores_enunciados_grupo_pregunta = {'enunciados_grupo_pregunta': errores_enunciados_grupo_pregunta}
         error.update(errores_enunciados_grupo_pregunta)
 
+        #Edición de grupo de enunciados
         if len(enunciados_grupo_pregunta_editar) != 0:
             for indice, enunciado in enumerate(enunciados_grupo_pregunta_editar):
                 datos_enunciado = EnunciadoGrupoPregunta.objects.filter(id = enunciado['id']).first()
@@ -394,6 +373,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                         'indice': indice
                     })
 
+        #Creacion de grupo de enunciados
         if len(enunciados_grupo_pregunta) != 0:
             datos_crear_enuciados_grupo_pregunta = self.crear_enunciados_grupo_pregunta(enunciados_grupo_pregunta)
             if datos_crear_enuciados_grupo_pregunta['validar_errores'] != True:
@@ -405,6 +385,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         errores_enunciados_grupo_pregunta = {'enunciados_grupo_pregunta': errores_enunciados_grupo_pregunta}
         error.update(errores_enunciados_grupo_pregunta)
 
+        #Edición de justificaciones
         if len(justificaciones_editar) != 0:
             for justificacion in justificaciones_editar:
                 datos_justificacion = Justificacion.objects.fliter(id = justificacion['id']).first()
@@ -415,9 +396,10 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                     validar_errores = True
                     errores_justificacion.append({
                         'justificacion': justificacion_serializer.errors,
-                        'pregunta': justificacion['pregunta']
+                        'indice_pregunta': justificacion['indice_pregunta']
                     })
 
+        #Edición de Preguntas
         if len(preguntas_editar) != 0:
             for pregunta in preguntas_editar:
                 datos_pregunta = Pregunta.objects.filter(id = pregunta['id']).first()
@@ -428,8 +410,48 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                     validar_errores = True
                     errores_preguntas.append({
                         'pregunta': pregunta_serialiazer.errors,
-                        'indice': pregunta['indice']
+                        'indice_pregunta': pregunta['indice_pregunta']
                     })
 
         if len(preguntas) != 0:
-            pass
+            datos_preguntas = self.crear_multiples_preguntas(preguntas)
+            preguntas_validas = datos_preguntas['preguntas_validas']
+            opciones_pregunta_validas = datos_preguntas['opciones_pregunta_validas']
+            enunciados_pregunta_validas = datos_preguntas['enunciados_pregunta_validas']
+            justificaciones_creadas = datos_preguntas['justificaciones_creadas']
+
+            validar_errores = datos_preguntas['validar_errores']
+            errores_preguntas = datos_preguntas['errores_preguntas']
+            errores_enunciados_pregunta = datos_preguntas['errores_enunciados_pregunta']
+            errores_opciones_pregunta = datos_preguntas['errores_opciones_pregunta']
+            errores_justificacion = datos_preguntas['errores_justificacion']
+
+        #Edición de opciones pregunta
+        if len(opciones_pregunta_editar) != 0:
+            for opcion in opciones_pregunta_editar:
+                datos_opcion = OpcionPregunta.objects.filter(id = opcion['id']).first()
+                opcion_pregunta_serializer = OpcionPreguntaSerializer(datos_opcion, opcion)
+                if opcion_pregunta_serializer.is_valid():
+                    opcion_pregunta_serializer.update(datos_opcion, opcion)
+                else:
+                    validar_errores = True
+                    errores_opciones_pregunta_editar.append({
+                        'indice_pregunta': opcion['indice_pregunta'],
+                        'indice_opcion': opcion['indice_opcion'],
+                        'error_opcion_editar': opcion_pregunta_serializer.errors
+                    })
+
+        if len(opciones_pregunta_nuevas) != 0:
+            for opcion in opciones_pregunta_nuevas:
+                datos_opciones = self.crear_opciones_pregunta(opcion['opciones_pregunta'])
+                if datos_opciones['validar_errores'] != True:
+                    opciones_pregunta_validas_nuevas.append({
+                        'pregunta_id': opcion["pregunta_id"],
+                        'opciones_validas': datos_opciones['opciones_validas']
+                    })
+                else:
+                    validar_errores = datos_opciones['validar_errores']
+                    errores_opciones_pregunta.append({
+                        'opciones': datos_opciones['errores_opciones'],
+                        'indice_pregunta': opcion['indice_pregunta']
+                    })
