@@ -134,7 +134,6 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
 
         return {
             'pregunta':{
-                'grupo': instance.grupo if instance.grupo is not None else '',
                 'respuesta': respuesta_serializer.data,
                 'justificacion': justificacion_serializer.data,
                 'enunciados': enunciados_serializer.data,

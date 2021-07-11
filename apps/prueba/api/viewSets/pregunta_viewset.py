@@ -259,18 +259,19 @@ class PreguntaViewSet(viewsets.ViewSet):
         return Response({'mensaje':'La pregunta se ha actualizado correctamente!'}, status = status.HTTP_201_CREATED)
 
     def retrieve(self, request, *args, **kwargs):
-        pregunta = Pregunta.objects.filter(id = self.kwargs['pk'], estado = True).first()
+        pregunta = Pregunta.objects.filter(id = kwargs['pk'], estado = True).first()
         if pregunta:
             data = PreguntaDetalleSerializer(pregunta)
             return Response(data.data, status = status.HTTP_200_OK)
         return Response({'error', 'No existe una pregunta con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
-        pregunta = self.get_queryset(pk = kwargs['pk'])
+        pregunta = Pregunta.objects.filter(id = kwargs['pk']).first()
 
         if not pregunta:
             return Response({'error':'No existe una pregunta con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
         else:
+            Justificacion.objects.filter(id = pregunta.justificacion_id).delete()
             pregunta.delete()
             return Response({'mensaje':'La pregunta ha sido eliminada!'}, status = status.HTTP_200_OK)
 

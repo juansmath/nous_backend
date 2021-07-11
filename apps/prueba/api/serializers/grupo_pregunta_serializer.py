@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from apps.prueba.api.serializers.pregunta_serializer import PreguntaDetalleSerializer
 
-from apps.prueba.models import GrupoPregunta, EnunciadoGrupoPregunta
+from apps.prueba.models import GrupoPregunta, EnunciadoGrupoPregunta, Pregunta
 
 class EnunciadoGrupoPreguntaSerializer(serializers.ModelSerializer):
     def validate_enunciado_general(self, value):
@@ -28,8 +28,7 @@ class EnunciadoGrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
         return {
             'enunciado_grupo_preguntas':{
                 'id': instance.id,
-                'enunciado_general': instance.enunciado_general,
-                'grupo_pregunta':instance.grupo_pregunta if instance.grupo_pregunta is not None else ''
+                'enunciado_general': instance.enunciado_general
             }
         }
 
@@ -44,18 +43,23 @@ class GrupoPreguntaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
 class GrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
-    pregunta = PreguntaDetalleSerializer(many = True, read_only = True)
-
     class Meta:
         model = GrupoPregunta
-        fields = ['id','cantidad_preguntas','preguntas','fecha_creacion']
-
+        fields = ['id','cantidad_preguntas','nombre_grupo','fecha_creacion']
 
     def to_representation(self, instance):
+        enunciados_grupo = EnunciadoGrupoPregunta.objects.filter(grupo_id = instance.id, estado = True)
+        enunciado_grupo_serializer = EnunciadoGrupoPreguntaDetalleSerializer(enunciados_grupo, many = True)
+
+        preguntas = Pregunta.objects.filter(grupo_id = instance.id, estado = True)
+        preguntas_serializer = PreguntaDetalleSerializer(preguntas, many = True)
+
         return {
             'grupo_preguntas':{
                 'id': instance.id,
-                'cantidad_preguntas': instance.cantidad_max_preguntas,
-                'preguntas': self.preguntas
+                'nombre_grupo': instance.nombre_grupo,
+                'enunciados_grupo_preguntas': enunciado_grupo_serializer.data,
+                'cantidad_preguntas': instance.cantidad_preguntas,
+                'preguntas': preguntas_serializer.data
             }
         }
