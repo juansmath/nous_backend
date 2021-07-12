@@ -103,7 +103,7 @@ class PreguntaSerializer(serializers.ModelSerializer):
 
     def validate_justificacion(self, value):
         if value == '':
-            raise serializers.ValidationError('Debe selecionar una justificación')
+            raise serializers.ValidationError('Debe crear una justificación')
         return value
 
     class Meta:
@@ -140,3 +140,16 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
                 'opciones':opciones_serializer.data,
             },
         }
+
+class PreguntaHojaRespuestaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Pregunta
+        exclude = ('estado',)
+
+        def to_representation(self, instance):
+            return {
+                'pregunta':{
+                    'id': instance.id,
+                    'respuesta': instance.respuesta.id if instance.respuesta.id is not None else '',
+                }
+            }

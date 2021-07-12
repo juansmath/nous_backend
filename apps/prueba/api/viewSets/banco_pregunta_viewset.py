@@ -42,7 +42,6 @@ class BancoPreguntaViewSet(viewsets.ViewSet):
 
     def create(self, request, *args, **kwargs):
         serializer_banco_pregunta = self.serializer_class(data = request.data)
-        print(serializer_banco_pregunta)
         self.perform_create(serializer_banco_pregunta)
         return Response(serializer_banco_pregunta.data,{'mensaje':'El banco de preguntas se creo exitosamente!'}, status=status.HTTP_201_CREATED)
 

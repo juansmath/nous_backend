@@ -6,12 +6,14 @@ from apps.prueba.api.serializers.grupo_pregunta_serializer import GrupoPreguntaD
 from apps.prueba.models import BancoPreguntas, Pregunta,GrupoPregunta, Competencia
 
 class BancoPreguntasSerializer(serializers.ModelSerializer):
-    pregunta = serializers.PrimaryKeyRelatedField(allow_empty = True, many = True, queryset=Pregunta.objects.all())
-    grupo_pregunta = serializers.PrimaryKeyRelatedField(allow_empty = True, many = True, queryset=GrupoPregunta.objects.all())
-
     def validate_nombre_banco(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
+        return value
+
+    def validate_modulo(self, value):
+        if value == '':
+            raise serializers.ValidationError('Debe seleccionar un módulo')
         return value
 
     class Meta:
@@ -24,13 +26,13 @@ class BancoPreguntasDetalleSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
     def to_representation(self, instance):
-        competencias = Competencia.objects.filter(id_referencia = instance.id, estado = True)
-        competencias_serializer = CompetenciaSerializer(competencias, many = True)
+        competencia = Competencia.objects.filter(id = instance.competencia.id, estado = True)
+        competencias_serializer = CompetenciaSerializer(competencia, many = True)
 
-        preguntas = Pregunta.objects.filter(id_referencia = instance.id, estado = True)
+        preguntas = Pregunta.objects.filter(banco_preguntas = instance.id, estado = True)
         preguntas_serializer = PreguntaDetalleSerializer(preguntas, many = True)
 
-        grupos_preguntas = GrupoPregunta.objects.filter(id_referencia = instance.id, estado = True)
+        grupos_preguntas = GrupoPregunta.objects.filter(banco_preguntas = instance.id, estado = True)
         grupos_preguntas_serializer = GrupoPreguntaDetalleSerializer(grupos_preguntas, many = True)
 
         return {
