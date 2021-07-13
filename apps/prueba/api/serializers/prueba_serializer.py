@@ -1,10 +1,10 @@
 from rest_framework import serializers
 
 from apps.prueba.api.serializers.banco_pregunta_serializer import BancoPreguntasDetalleSerializer
-from apps.prueba.api.serializers.general_serializer import OpcionRespuestaSerializer
+from apps.prueba.api.serializers.general_serializer import OpcionRespuestaSerializer, ModuloSerializer, NivelEjecucionSerializer
 from apps.docente.api.serializers import DocenteSerializer
 
-from apps.prueba.models import Prueba, ResultadoPrueba, HojaRespuesta, BancoPreguntas, OpcionRespuesta
+from apps.prueba.models import Prueba, ResultadoPrueba, HojaRespuesta, BancoPreguntas, OpcionRespuesta, Modulo, NivelEjecucion
 from apps.estudiante.models import Estudiante
 from apps.docente.models import Docente
 
@@ -97,7 +97,8 @@ class HojaRespuestaDetalleSerializer(serializers.ModelSerializer):
                 'pregunta': instance.pregunta.id if instance.pregunta.id is not None else '',
                 'opcion_marcada': opcion_marcada_serializer.data,
                 'estudiante': instance.estudiante.id if instance.estudiante.id is not None else '',
-                'tiempo_empleado_pregunta': instance.tiempo_empleado_pregunta
+                'tiempo_empleado_pregunta': instance.tiempo_empleado_pregunta,
+                'calificacion': instance.calificacion
             }
         }
 
@@ -107,6 +108,18 @@ class ResultadoPruebaSerializer(serializers.ModelSerializer):
         exclude = ('estado',)
 
     def to_representation(self, instance):
+        hoja_respuestas = HojaRespuesta.objects.filter(prueba__exact = instance.prueba, estudiante__exact = instance.estudiante)
+        hoja_respuestas_serializer = HojaRespuestaDetalleSerializer(hoja_respuestas, many = True)
+
+        prueba = Prueba.objects.filter(id = instance.prueba, estado = True)
+        prueba_serializer = PruebaDetalleSerializer(prueba, many = True)
+
+        modulo = Modulo.objects.filter(id = instance.modulo, estado = True)
+        modulo_serializer = ModuloSerializer(modulo, many = True)
+
+        calificacion_final = NivelEjecucion.objects.filter(id = instance.calificacion_final, estado = True)
+        calificacion_final_serializer = NivelEjecucionSerializer(calificacion_final, many = True)
+
         return {
             'resultado_prueba':{
                 'id': instance.id,
@@ -114,8 +127,13 @@ class ResultadoPruebaSerializer(serializers.ModelSerializer):
                 'estudiante': instance.estudiante.id if instance.estudiante.id is not None else '',
                 'docente': instance.docente.id if instance.docente.id is not None else '',
                 'modulo': instance.modulo.id if instance.modulo.id is not None else '',
-                'prueba': instance.prueba.id if instance.prueba.id is not None else '',
-                'hoja_respuesta': instance.hoja_respuesta.id if instance.hoja_respuesta.id is not None else ''
+                'prueba': prueba_serializer.data,
+                'calificada': instance.calificada,
+                'numero_aciertos': instance.numero_aciertos,
+                'numero_desaciertos': instance.numero_desaciertos,
+                'tiempo_empleado': instance.tiempo_empleado,
+                'hoja_respuestas': hoja_respuestas_serializer.data,
+                'calificacion_final': calificacion_final_serializer.data,
             }
         }
 

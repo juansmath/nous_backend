@@ -6,7 +6,6 @@ from apps.estudiante.models import Estudiante
 from apps.docente.models import Docente
 
 class Modulo(BaseModel):
-    codigo_modulo = models.CharField('Código del módulo', max_length = 50, null = False, blank = False)
     nombre_modulo = models.CharField('Nombre del módulo', max_length = 100, null = False, blank = False)
     # historial = HistoricalRecords()
 
@@ -47,6 +46,40 @@ class Competencia(BaseModel):
 
     def __str__(self):
         return self.nombre_competencia
+
+class NivelEjecucion(BaseModel):
+    nivel = models.CharField('Nivel de desempeño', max_length = 50, null = False, blank = False)
+    puntaje_minimo = models.PositiveSmallIntegerField('Puntaje minimo', null = False, blank = False)
+    puntaje_maximo = models.PositiveSmallIntegerField('Puntaje maximo', null = False, blank = False)
+    descripcion_general = models.CharField('Descripción nivel', max_length = 250, null = False, blank = False)
+    modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE, null = False, blank = False)
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Nivel de desempeño'
+        verbose_name_plural = 'Niveles de desempeño'
+
+    def __str__(self):
+        return self.nivel
+
+class DescripcionNivelEjecucion(BaseModel):
+    descripcion_especifica = models.CharField('Descripción especifica nivel desempeño', max_length = 250, null = False, blank = False)
+    nivel_ejecucion = models.ForeignKey(NivelEjecucion, on_delete = models.CASCADE, null = False, blank = False)
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Descripcion especifica nivel de desempeño'
+
+class NivelDificultad(BaseModel):
+    nivel = models.CharField('Nivel de dificultad', max_length = 50, null = False, blank = False)
+
+    class Meta:
+        ordering = ['id']
+        verbose_name = 'Nivel de dificultad pregunta'
+        verbose_name_plural = 'Niveles de dificultad'
+
+    def __str__(self):
+        return self.nivel
 
 class BancoPreguntas(BaseModel):
     nombre_banco = models.CharField('Nombre del banco de preguntas', max_length = 100, null = False, blank = False)
@@ -150,9 +183,10 @@ class Justificacion(BaseModel):
 
 class Pregunta(BaseModel):
     grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE, null = True, blank = True)
-    respuesta = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE)
-    justificacion = models.OneToOneField(Justificacion, on_delete = models.CASCADE)
+    respuesta = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE, null = False, blank = False)
+    justificacion = models.OneToOneField(Justificacion, on_delete = models.CASCADE, null = False, blank = False)
     banco_preguntas = models.ForeignKey(BancoPreguntas, on_delete=models.CASCADE, null = True, blank = True)
+    nivel_dificultad = models.ForeignKey(NivelDificultad, on_delete=models.CASCADE, null = False, blank = False)
 
     # historial = HistoricalRecords()
 
@@ -282,12 +316,18 @@ class Prueba(BaseModel):
     def __str__(self):
         return self.nombre_prueba
 
+class PruebasEstudiante(BaseModel):
+    estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, null = False, blank= False)
+    prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE, null = False, blank = False)
+    presentada = models.BooleanField('Prueba presentada', default = False)
+
 class HojaRespuesta(BaseModel):
     prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
     pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE, null = True, blank = True)
     opcion_marcada = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE, null = True, blank = True)
     estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
     tiempo_empleado_pregunta = models.TimeField('Tiempo que empleo para responder la pregunta', null = False, blank = False)
+    calificacion = models.BooleanField('Calificación pregunta', default=False, null = False, blank = False)
     # historial = HistoricalRecords()
 
     # @property
@@ -311,6 +351,7 @@ class ResultadoPrueba(BaseModel):
     numero_aciertos = models.PositiveSmallIntegerField('Respuestas correctas', null = True, blank = True)
     numero_desaciertos = models.PositiveSmallIntegerField('Respuestas incorrectas', null = True, blank = True)
     tiempo_empleado = models.TimeField('Tiempo empleado en la prueba', null = False, blank = False)
+    calificacion_final = models.ForeignKey(NivelEjecucion, on_delete = models.CASCADE)
     # historial = HistoricalRecords()
 
     # @property
@@ -322,7 +363,7 @@ class ResultadoPrueba(BaseModel):
     #     self.changed_by = value
 
     class Meta:
-        ordering = ['estudiante']
+        ordering = ['prueba', 'estudiante']
         managed = True
         verbose_name = 'Resultado de la prueba'
         verbose_name_plural = 'Resultados de las pruebas'

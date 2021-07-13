@@ -336,6 +336,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         opciones_pregunta_borrar = request.data['opciones_pregunta_borrar']
 
         justificaciones_editar = request.data['justificaciones_editar']
+        justificaciones_borrar = request.data['justificaciones_borrar']
 
         datos_grupo_pregunta = GrupoPregunta.objects.filter(id = kwargs['pk']).first()
         if not datos_grupo_pregunta:
@@ -571,9 +572,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         OpcionPregunta.objects.bulk_create(datos_opciones)
 
         #Borrado de preguntas
-        justificaciones_borrar = []
         for pregunta in preguntas_borrar:
-            justificaciones_borrar.append(pregunta['justificacion_id'])
             Pregunta.objects.filter(id = pregunta['id']).delete()
 
         #Borrado de justificaciones

@@ -29,7 +29,7 @@ class BancoPreguntasDetalleSerializer(serializers.ModelSerializer):
         competencia = Competencia.objects.filter(id = instance.competencia.id, estado = True)
         competencias_serializer = CompetenciaSerializer(competencia, many = True)
 
-        preguntas = Pregunta.objects.filter(banco_preguntas = instance.id, estado = True)
+        preguntas = Pregunta.objects.filter(banco_preguntas = instance.id, estado = True, grupo__exact = "")
         preguntas_serializer = PreguntaDetalleSerializer(preguntas, many = True)
 
         grupos_preguntas = GrupoPregunta.objects.filter(banco_preguntas = instance.id, estado = True)
