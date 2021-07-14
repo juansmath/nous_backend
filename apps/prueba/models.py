@@ -322,7 +322,7 @@ class PruebasEstudiante(BaseModel):
     presentada = models.BooleanField('Prueba presentada', default = False)
 
 class HojaRespuesta(BaseModel):
-    prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
+    prueba_asignada = models.ForeignKey(PruebasEstudiante, on_delete = models.CASCADE)
     pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE, null = True, blank = True)
     opcion_marcada = models.ForeignKey(OpcionRespuesta, on_delete = models.CASCADE, null = True, blank = True)
     estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
@@ -346,7 +346,7 @@ class ResultadoPrueba(BaseModel):
     estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
     docente = models.ForeignKey(Docente, on_delete = models.CASCADE)
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
-    prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE)
+    prueba_asignada = models.ForeignKey(PruebasEstudiante, on_delete = models.CASCADE)
     calificada = models.BooleanField('Prueba calificada', default = False, null = False, blank = False)
     numero_aciertos = models.PositiveSmallIntegerField('Respuestas correctas', null = True, blank = True)
     numero_desaciertos = models.PositiveSmallIntegerField('Respuestas incorrectas', null = True, blank = True)
