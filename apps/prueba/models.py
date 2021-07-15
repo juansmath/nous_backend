@@ -51,7 +51,7 @@ class NivelEjecucion(BaseModel):
     nivel = models.CharField('Nivel de desempeño', max_length = 50, null = False, blank = False)
     puntaje_minimo = models.PositiveSmallIntegerField('Puntaje minimo', null = False, blank = False)
     puntaje_maximo = models.PositiveSmallIntegerField('Puntaje maximo', null = False, blank = False)
-    descripcion_general = models.CharField('Descripción nivel', max_length = 250, null = False, blank = False)
+    descripcion_general = models.TextField('Descripción nivel', null = False, blank = False)
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE, null = False, blank = False)
 
     class Meta:
@@ -63,7 +63,7 @@ class NivelEjecucion(BaseModel):
         return self.nivel
 
 class DescripcionNivelEjecucion(BaseModel):
-    descripcion_especifica = models.CharField('Descripción especifica nivel desempeño', max_length = 250, null = False, blank = False)
+    descripcion_especifica = models.TextField('Descripción especifica nivel desempeño', null = False, blank = False)
     nivel_ejecucion = models.ForeignKey(NivelEjecucion, on_delete = models.CASCADE, null = False, blank = False)
 
     class Meta:
@@ -363,7 +363,7 @@ class ResultadoPrueba(BaseModel):
     #     self.changed_by = value
 
     class Meta:
-        ordering = ['prueba', 'estudiante']
+        ordering = ['prueba_asignada', 'estudiante']
         managed = True
         verbose_name = 'Resultado de la prueba'
         verbose_name_plural = 'Resultados de las pruebas'

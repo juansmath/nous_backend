@@ -51,5 +51,5 @@ class PersonaDetalleSerializer(serializers.ModelSerializer):
             'estado_civil': instance.estado_civil,
             'telefono': instance.telefono,
             'fecha_nacimiento': instance.fecha_nacimiento,
-            'usuario_id': instance.id_usuario
+            'usuario_id': instance.usuario_id
         }

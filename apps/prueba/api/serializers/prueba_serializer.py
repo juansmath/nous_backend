@@ -77,7 +77,7 @@ class PruebaEstudianteDetalleSerializer(serializers.ModelSerializer):
         prueba = Prueba.objects.filter(id = instance.prueba, estado = True).first()
         prueba_serializer = PruebaSerializer(prueba, many = True)
 
-        estudiante = Estudiante.objects.filter(id = instance.estudiante).select_related('usuarios')
+        estudiante = Estudiante.objects.filter(id = instance.estudiante).select_related('persona')
         return {
             'id': instance.id,
             'prueba': prueba_serializer.data,

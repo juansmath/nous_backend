@@ -79,15 +79,12 @@ class PruebasEstudianteViewSet(viewsets.ViewSet):
             'errores_asignacion_prueba': errores_asignacion_prueba
         }
 
-    def list(self, request):
-        pass
-
     def create(self, request):
         validar_errores = False
         asignaciones_prueba_validas = []
         errores_asignacion_prueba, error = [], {}
 
-        asignacion_prueba_estudiantes = request['asignacion_prueba_estudaintes']
+        asignacion_prueba_estudiantes = request['asignacion_prueba_estudiantes']
 
         datos_asignaciones = self.crear_asignacion_prueba_estudaintes(asignacion_prueba_estudiantes)
 
@@ -113,6 +110,8 @@ class PruebasEstudianteViewSet(viewsets.ViewSet):
         borrar_asignacion_prueba_estudiantes = request['borrar_asignacion_prueba_estudaintes']
 
         datos_asignaciones = self.crear_asignacion_prueba_estudaintes(asignacion_prueba_estudiantes)
+        if not datos_asignaciones:
+            return Response({'error':'No existe una prueba asignada con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
 
         validar_errores = datos_asignaciones['validar_errores']
         asignaciones_prueba_validas = datos_asignaciones['asignaciones_prueba_validas']
@@ -131,4 +130,18 @@ class PruebasEstudianteViewSet(viewsets.ViewSet):
         return Response({'mensaje': 'Se actualizo correctamente la asignación a los estudiantes'}, status=status.HTTP_201_CREATED)
 
     def retrieve(self, request, *args, **kwargs):
-        pass
+        datos_asignacion_prueba = self.model.objects.filter(id = kwargs['pk'], estado = True)
+        if not datos_asignacion_prueba:
+            return Response({'error':'No existe una prueba asignada con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
+
+        datos_asignacion_prueba_serializer = PruebaEstudianteDetalleSerializer(datos_asignacion_prueba, many = True)
+        return Response(datos_asignacion_prueba_serializer.data, status=status.HTTP_200_OK)
+
+class ResultadosPruebaViewSet(viewsets.ViewSet):
+    model = ResultadoPrueba
+    serializer_class = ResultadoPruebaSerializer
+
+    def list(self, request):
+        resultados_pruebas = self.model.objects.filter(estado = True)
+        resultados_pruebas_serializer = self.serializer_class(resultados_pruebas, many = True)
+        return Response(resultados_pruebas_serializer.data, status=status.HTTP_200_OK)
