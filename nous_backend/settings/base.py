@@ -41,6 +41,7 @@ LOCAL_APPS = [
 ]
 
 THIRD_APPS = [
+    'rest_framework.authtoken',
     'rest_framework',
     'simple_history',
     'drf_yasg',

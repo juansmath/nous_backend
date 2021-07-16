@@ -5,7 +5,11 @@ from apps.usuario.models import Usuario
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = '__all__'
+        exclude = (
+            'last_login',
+            'groups',
+            'password',
+        )
 
     def crear_usuario(self, validated_data):
         usuario = Usuario(**validated_data)
