@@ -13,6 +13,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 
+from rest_framework.views import APIView
+
 from apps.usuario.api.serializer import *
 
 from apps.usuario.models import Usuario
@@ -37,7 +39,7 @@ class Login(ObtainAuthToken):
             if usuario:
                 if usuario.is_active:
                     token, created = self.crear_token(usuario)
-                    usuario_serializer = UsuarioSerializer(usuario, many = True)
+                    usuario_serializer = UsuarioSerializer(usuario)
                     if created:
                         return Response({
                             'token': token.key,
@@ -56,11 +58,31 @@ class Login(ObtainAuthToken):
                         return Response({
                             'token': token.key,
                             'usuario': usuario_serializer.data,
-                            'mensaje': 'Bienvenido a NOUS, es un placer tenerte de vuelta!'
-                        }
+                            'mensaje': 'Bienvenido a NOUS, es un placer tenerte de vuelta!',
+                        }, status=status.HTTP_201_CREATED)
                 else:
-                    return Response('error': 'El usuario esta inhabilitado para usar el sistema', status=status.HTTP_403_FORBIDDEN)
+                    return Response({'error': 'El usuario esta inhabilitado para usar el sistema'}, status=status.HTTP_403_FORBIDDEN)
             else:
                 return Response({'mensaje':'Bienvenido a NOUS, es un placer tenerte de vuelta!'}, status=status.HTTP_200_OK)
         else:
             return Response({'error': 'Usuario o contraseña incorrectos!'}, status=status.HTTP_400_BAD_REQUEST)
+
+class Logout(APIView):
+    def get(self, request, format=None, mensaje_token='No encontrado', mensaje_sessions='Sesion no encontrada'):
+        print(request.GET.get('token'))
+        token = request.GET.get('token')
+        usuario = Usuario.objects.filter(username=request.GET.get('username')).first()
+        token = Token.objects.filter(key=token).first()
+        all_sessions = Session.objects.filter(expire_date__gte=datetime.now())
+
+        if usuario and all_sessions:
+            for session in all_sessions:
+                session_data = session.get_decoded()
+                if usuario.id == int(session_data.get('_auth_user_id')):
+                    session.delete()
+            mensaje_sessions = 'Sesiones encontradas y terminadas!'
+
+        if token:
+            mensaje_token = 'Token encontrado!'
+            token.delete()
+        return Response({'mensaje_token': mensaje_token, 'mensaje_sessions': mensaje_sessions}, status=status.HTTP_200_OK)

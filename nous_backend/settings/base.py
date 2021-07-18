@@ -53,6 +53,8 @@ SWAGGER_SETTINGS = {
     'DOC_EXPANSION': 'none',
 }
 
+TOKEN_EXPIRED_AFTER_SECONDS = 86400
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
