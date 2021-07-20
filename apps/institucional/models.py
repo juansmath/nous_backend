@@ -25,7 +25,6 @@ class Facultad(BaseModel):
         return self.nombre_facultad
 
 class Programa(BaseModel):
-    codigo_programa = models.CharField('Código del programa', max_length=50, null = False, blank = False, unique = True)
     nombre_programa = models.CharField('Nombre del programa', max_length = 100, null = False, blank = False, unique = True)
     creditos = models.PositiveSmallIntegerField('Creditos academicos del programa', null = False, blank = False)
     semestres = models.PositiveSmallIntegerField('Semetres', null = False, blank = False)

@@ -16,7 +16,6 @@ class ProgramaSerializer(serializers.ModelSerializer):
         return {
             'data':{
                 'id': instance.id,
-                'codigo_programa': instance.codigo_programa,
                 'nombre_programa': instance.nombre_programa,
                 'creditos': instance.creditos,
                 'semestres': instance.semestres,
