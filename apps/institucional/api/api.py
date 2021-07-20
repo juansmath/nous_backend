@@ -5,7 +5,9 @@ from rest_framework.response import Response
 from .serializers import ProgramaSerializer, FacultadSerializer, NivelAcademicoSerializer
 from apps.institucional.models import Programa, Facultad, NivelAcademico
 
-class ProgramaViewSet(viewsets.ViewSet):
+from apps.base.authentication_mixins import Authentication
+
+class ProgramaViewSet(Authentication, viewsets.ViewSet):
     model = Programa
     serializer_class = ProgramaSerializer
 

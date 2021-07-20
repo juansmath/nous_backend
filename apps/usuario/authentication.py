@@ -30,7 +30,7 @@ def token_expire_handler(token):
 class ExpiringTokenAuthentication(TokenAuthentication):
     def authenticate_credentials(self, key):
         try:
-            token = Token.objects.filter(key=key)
+            token = Token.objects.select_related('user').get(key=key)
         except:
             raise AuthenticationFailed('El token no es valido!')
 
