@@ -26,7 +26,7 @@ class BancoPreguntaViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         data_banco_pregunta = self.model.objects.filter(id = kwargs['pk'], estado = True).first()
-        if not banco_pregunta:
+        if not data_banco_pregunta:
             return Response({'mensaje':'No existe un banco de preguntas con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
 
         serializer_banco_pregunta = BancoPreguntasDetalleSerializer(data_banco_pregunta)

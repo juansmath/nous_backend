@@ -29,7 +29,7 @@ class DocenteSerializer(serializers.ModelSerializer):
         persona = Persona.objects.get(id = instance.persona)
         persona_serializer = PersonaDetalleSerializer(persona)
 
-        nivel_academico = NivelAcademco.objects.get(id = instance.nivel_academico)
+        nivel_academico = NivelAcademico.objects.get(id = instance.nivel_academico)
         nivel_academico_serializer = NivelAcademicoSerializer(nivel_academico)
 
         return {

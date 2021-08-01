@@ -22,3 +22,6 @@ class Docente(BaseModel):
     class Meta:
         verbose_name = 'Docente'
         verbose_name_plural = 'Docentes'
+
+    # def __str__(self):
+    #     return self.persona or ''

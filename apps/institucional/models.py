@@ -4,7 +4,6 @@ from django.db import models
 from apps.base.models import BaseModel
 
 class Facultad(BaseModel):
-    codigo_facultad = models.CharField('Código de la facultad', max_length = 50, null = False, blank = False, unique = True)
     nombre_facultad = models.CharField('Nombre de la facultad', max_length = 100, null = False, blank = False)
     # historial = HistoricalRecords()
 
@@ -67,3 +66,6 @@ class NivelAcademico(BaseModel):
         ordering = ['nivel_academico']
         verbose_name = 'Nivel academico'
         verbose_name_plural = 'Niveles académicos'
+
+    def __str__(self):
+        return self.nivel_academico

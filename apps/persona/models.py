@@ -53,4 +53,4 @@ class Persona(BaseModel):
         verbose_name_plural = 'Personas'
 
     def __str__(self):
-        return f'{self.primer_nombre} {self.segundo_nombre} {self.primer_apellido} {self.segundo_apellido}'
+        return f'{self.primer_nombre} {self.segundo_nombre or ""} {self.primer_apellido} {self.segundo_apellido or ""}'
