@@ -1,5 +1,5 @@
 from django.db import models
-# from simple_history.models import HistoricalRecords
+from simple_history.models import HistoricalRecords
 
 from apps.base.models import BaseModel
 from apps.estudiante.models import Estudiante
@@ -7,15 +7,15 @@ from apps.docente.models import Docente
 
 class Modulo(BaseModel):
     nombre_modulo = models.CharField('Nombre del módulo', max_length = 100, null = False, blank = False)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['nombre_modulo']
@@ -29,15 +29,15 @@ class Competencia(BaseModel):
     nombre_competencia = models.CharField('Nombre de la competencia', max_length = 100, null = False, blank = False)
     porcentaje = models.FloatField('Porcentaje de la competencia', null = True, blank = True)
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['nombre_competencia']
@@ -53,6 +53,15 @@ class NivelEjecucion(BaseModel):
     puntaje_maximo = models.PositiveSmallIntegerField('Puntaje maximo', null = False, blank = False)
     descripcion_general = models.TextField('Descripción nivel', null = False, blank = False)
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE, null = False, blank = False)
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['id']
@@ -65,6 +74,15 @@ class NivelEjecucion(BaseModel):
 class DescripcionNivelEjecucion(BaseModel):
     descripcion_especifica = models.TextField('Descripción especifica nivel desempeño', null = False, blank = False)
     nivel_ejecucion = models.ForeignKey(NivelEjecucion, on_delete = models.CASCADE, null = False, blank = False)
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['id']
@@ -72,6 +90,15 @@ class DescripcionNivelEjecucion(BaseModel):
 
 class NivelDificultad(BaseModel):
     nivel = models.CharField('Nivel de dificultad', max_length = 50, null = False, blank = False)
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['id']
@@ -85,16 +112,15 @@ class BancoPreguntas(BaseModel):
     nombre_banco = models.CharField('Nombre del banco de preguntas', max_length = 100, null = False, blank = False)
     modulo = models.ForeignKey(Modulo, on_delete = models.CASCADE)
     competencia = models.OneToOneField(Competencia,on_delete = models.CASCADE, null = False, blank = False)
+    historial = HistoricalRecords()
 
-    # historial = HistoricalRecords()
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
-
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['nombre_banco']
@@ -109,15 +135,15 @@ class GrupoPregunta(BaseModel):
     nombre_grupo = models.CharField('Nombre del grupo', max_length=200, blank=False, null=False)
     cantidad_preguntas = models.PositiveSmallIntegerField('Cantidad maxíma de preguntas', null = False, blank = False)
     banco_preguntas = models.ForeignKey(BancoPreguntas, on_delete=models.CASCADE, null = False, blank = False)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['nombre_grupo']
@@ -127,15 +153,15 @@ class GrupoPregunta(BaseModel):
 class EnunciadoGrupoPregunta(BaseModel):
     enunciado_general = models.TextField('Enunciado general del grupo de preguntas', null = False, blank = False, unique = True)
     grupo = models.ForeignKey(GrupoPregunta, on_delete = models.CASCADE, blank=True, null=True)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['fecha_creacion',]
@@ -144,15 +170,15 @@ class EnunciadoGrupoPregunta(BaseModel):
 
 class OpcionRespuesta(BaseModel):
     letra_opcion = models.CharField('nombre de la letra', max_length = 1, null = False, blank = False, unique = True)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['letra_opcion']
@@ -166,16 +192,15 @@ class Justificacion(BaseModel):
     afirmacion = models.CharField('Afirmación', max_length = 250, null = False, blank = False)
     evidencia = models.CharField('Evidencia', max_length = 250, null = False, blank = False)
     justificacion = models.TextField('Justificacion de la pregunta', null = False, blank = False)
+    historial = HistoricalRecords()
 
-    # historial = HistoricalRecords()
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
-
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         verbose_name = 'Justificacion'
@@ -187,16 +212,15 @@ class Pregunta(BaseModel):
     justificacion = models.OneToOneField(Justificacion, on_delete = models.CASCADE, null = False, blank = False)
     banco_preguntas = models.ForeignKey(BancoPreguntas, on_delete=models.CASCADE, null = True, blank = True)
     nivel_dificultad = models.ForeignKey(NivelDificultad, on_delete=models.CASCADE, null = False, blank = False)
+    historial = HistoricalRecords()
 
-    # historial = HistoricalRecords()
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
-
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         managed = True
@@ -225,15 +249,15 @@ class OpcionPregunta(BaseModel):
     contenido_opcion = models.CharField('Contenido de la opción', max_length = 250, null = False, blank = False, unique = True)
     pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE, blank = True, null = True)
     letra = models.CharField('Letra', max_length = 1, choices = LETRAS_OPCION, null = False, blank = False)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-        # self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         verbose_name = 'Opcion Enunciado'
@@ -242,15 +266,15 @@ class OpcionPregunta(BaseModel):
 class EnunciadoPregunta(BaseModel):
     enunciado = models.TextField('Enunciado de la pregunta', null = False, blank = False, unique = True)
     pregunta = models.ForeignKey(Pregunta, on_delete = models.CASCADE, blank = True, null = True)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['fecha_creacion',]
@@ -260,15 +284,15 @@ class EnunciadoPregunta(BaseModel):
 class ImagenEnunciadoGrupoPregunta(BaseModel):
     imagen = models.ImageField('Imagen grupo preguntas', upload_to = None, max_length=200, null = False, blank = False)
     enunciado_grupo_preguntas = models.ForeignKey(EnunciadoGrupoPregunta, on_delete = models.CASCADE)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         verbose_name = 'Imagen para grupo de preguntas'
@@ -277,15 +301,15 @@ class ImagenEnunciadoGrupoPregunta(BaseModel):
 class ImagenEnunciadoPregunta(BaseModel):
     imagen_enunciado = models.ImageField('Imagen pregunta', upload_to = None, max_length = 200)
     enunciado = models.ForeignKey(EnunciadoPregunta, on_delete = models.CASCADE)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         verbose_name = 'Imagen para pregunta'
@@ -297,15 +321,15 @@ class Prueba(BaseModel):
     numero_intentos = models.PositiveSmallIntegerField(default = 1)
     banco_preguntas = models.ManyToManyField(BancoPreguntas)
     docente = models.ForeignKey(Docente, on_delete= models.CASCADE)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['nombre_prueba']
@@ -320,6 +344,15 @@ class PruebasEstudiante(BaseModel):
     estudiante = models.ForeignKey(Estudiante, on_delete=models.CASCADE, null = False, blank= False)
     prueba = models.ForeignKey(Prueba, on_delete = models.CASCADE, null = False, blank = False)
     presentada = models.BooleanField('Prueba presentada', default = False)
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
 class HojaRespuesta(BaseModel):
     prueba_asignada = models.ForeignKey(PruebasEstudiante, on_delete = models.CASCADE)
@@ -328,15 +361,15 @@ class HojaRespuesta(BaseModel):
     estudiante = models.ForeignKey(Estudiante, on_delete = models.CASCADE)
     tiempo_empleado_pregunta = models.TimeField('Tiempo que empleo para responder la pregunta', null = False, blank = False)
     calificacion = models.BooleanField('Calificación pregunta', default=False, null = False, blank = False)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         verbose_name = 'Hoja de respuesta'
@@ -352,15 +385,15 @@ class ResultadoPrueba(BaseModel):
     numero_desaciertos = models.PositiveSmallIntegerField('Respuestas incorrectas', null = True, blank = True)
     tiempo_empleado = models.TimeField('Tiempo empleado en la prueba', null = False, blank = False)
     calificacion_final = models.ForeignKey(NivelEjecucion, on_delete = models.CASCADE)
-    # historial = HistoricalRecords()
+    historial = HistoricalRecords()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['prueba_asignada', 'estudiante']

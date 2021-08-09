@@ -3,10 +3,19 @@ from apps.base.models import BaseModel
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
-# from simple_history.models import HistoricalRecords
+from simple_history.models import HistoricalRecords
 
 class Rol(BaseModel):
     rol = models.CharField('Rol del usuario', max_length = 50, null = False, blank = False, unique = True)
+    historial = HistoricalRecords()
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['rol',]
@@ -69,16 +78,16 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     rol = models.ForeignKey(Rol, on_delete = models.CASCADE, null = True, blank = True)
     is_active = models.BooleanField(default = True)
     is_staff = models.BooleanField(default = False)
-    # historical = HistoricalRecords()
+    historical = HistoricalRecords()
     objects = UserManager()
 
-    # @property
-    # def _history_user(self):
-    #     return self.changed_by
+    @property
+    def _history_user(self):
+        return self.changed_by
 
-    # @_history_user_.setter
-    # def _history_user(self, value):
-    #     self.changed_by = value
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by = value
 
     class Meta:
         ordering = ['username']
