@@ -88,6 +88,9 @@ class DescripcionNivelEjecucion(BaseModel):
         ordering = ['id']
         verbose_name = 'Descripcion especifica nivel de desempeño'
 
+    def __str__(self):
+        return f'Descripcion especifica - {self.id} - {self.nivel_ejecucion}'
+
 class NivelDificultad(BaseModel):
     nivel = models.CharField('Nivel de dificultad', max_length = 50, null = False, blank = False)
     historial = HistoricalRecords()

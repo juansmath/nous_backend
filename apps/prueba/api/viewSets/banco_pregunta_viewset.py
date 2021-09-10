@@ -19,7 +19,7 @@ class BancoPreguntaViewSet(viewsets.ViewSet):
         banco_pregunta_serializer = self.serializer_class(data = request.data)
 
         if banco_pregunta_serializer.is_valid():
-            self.banco_pregunta_serializer.save()
+            banco_pregunta_serializer.save()
             return Response(banco_pregunta_serializer.data, {'mensaje':'El banco de preguntas se creo exitosamente!'}, status=status.HTTP_201_CREATED)
         else:
             return Response({'mensaje':'Existen errores en los campos!', 'error': banco_pregunta_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

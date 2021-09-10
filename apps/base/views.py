@@ -15,7 +15,7 @@ from rest_framework.authentication import TokenAuthentication
 
 from rest_framework.views import APIView
 
-from apps.usuario.api.serializer import *
+from apps.usuario.api.serializers.usuario_serializer import *
 
 from apps.usuario.models import Usuario
 
