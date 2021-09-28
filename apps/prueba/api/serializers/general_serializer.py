@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from apps.prueba.models import Modulo, Competencia, OpcionRespuesta, NivelEjecucion, DescripcionNivelEjecucion, NivelDificultad
+from apps.prueba.models import Modulo, Competencia, NivelEjecucion, DescripcionNivelEjecucion
 
 class ModuloSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,9 +12,9 @@ class CompetenciaSerializer(serializers.ModelSerializer):
         model = Competencia
         exclude = ('estado',)
 
-class OpcionRespuestaSerializer(serializers.ModelSerializer):
+class DescripcionesNivelesEjecucionSerializer(serializers.ModelSerializer):
     class Meta:
-        model = OpcionRespuesta
+        model = DescripcionNivelEjecucion
         exclude = ('estado','fecha_creacion', 'fecha_eliminacion', 'fecha_actualizacion')
 
 class DescripcionNivelEjecucionSerializer(serializers.ModelSerializer):
@@ -39,9 +39,4 @@ class DescripcionNivelEjecucionSerializer(serializers.ModelSerializer):
 class NivelEjecucionSerializer(serializers.ModelSerializer):
     class Meta:
         model = NivelEjecucion
-        exclude = ('estado','fecha_creacion', 'fecha_eliminacion', 'fecha_actualizacion')
-
-class NivelDificultadSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = NivelDificultad
         exclude = ('estado','fecha_creacion', 'fecha_eliminacion', 'fecha_actualizacion')

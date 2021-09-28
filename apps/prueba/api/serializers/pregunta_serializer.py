@@ -1,6 +1,5 @@
 from rest_framework import serializers
-from apps.prueba.models import Pregunta, EnunciadoPregunta, Justificacion, OpcionPregunta, OpcionRespuesta
-from apps.prueba.api.serializers.general_serializer import OpcionRespuestaSerializer
+from apps.prueba.models import Pregunta, EnunciadoPregunta, Justificacion, OpcionPregunta
 
 class JustificacionSerializer(serializers.ModelSerializer):
     def validate_afirmacion(self, value):
@@ -106,6 +105,11 @@ class PreguntaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Debe crear una justificación')
         return value
 
+    def validate_nivel_dificultad(self, value):
+        if value == '':
+            raise serializers.ValidationError('Debe seleccionar un nivel de dificultad!')
+        return value
+
     class Meta:
         model = Pregunta
         exclude = ('estado',)
@@ -119,13 +123,6 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
         opciones = OpcionPregunta.objects.filter(pregunta = instance.id, estado = True)
         opciones_serializer = OpcionPreguntaDetalleSerializer(opciones ,many = True)
 
-        if instance.respuesta.id is not None:
-            respuesta = OpcionRespuesta.objects.filter(id = instance.respuesta.id, estado = True)
-        else:
-            respuesta = {}
-
-        respuesta_serializer = OpcionRespuestaSerializer(respuesta, many = True)
-
         justificacion = Justificacion.objects.filter(id = instance.justificacion.id, estado = True)
         justificacion_serializer = JustificacionDetalleSerializer(justificacion, many = True)
 
@@ -134,7 +131,6 @@ class PreguntaDetalleSerializer(serializers.ModelSerializer):
 
         return {
             'pregunta':{
-                'respuesta': respuesta_serializer.data,
                 'justificacion': justificacion_serializer.data,
                 'enunciados': enunciados_serializer.data,
                 'opciones':opciones_serializer.data,

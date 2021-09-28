@@ -150,7 +150,10 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                 preguntas_validas.append(datos_crear_pregunta['pregunta_valida'])
             else:
                 validar_errores = True
-                errores_preguntas.append(datos_crear_pregunta['errores_pregunta'])
+                errores_preguntas.append({
+                    'pregunta':datos_crear_pregunta['errores_pregunta'],
+                    'indice_pregunta':indice
+                })
 
             # Validaciones para opciones de la pregunta
             datos_crear_opciones_pregunta = self.crear_opciones_pregunta(pregunta['opciones_pregunta'])
@@ -218,11 +221,12 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         grupo_preguntas = request.data['grupo_preguntas']
         enunciados_grupo_pregunta = request.data['enunciados_grupo_pregunta']
         preguntas = request.data['preguntas']
-
+        
         grupo_preguntas_serializer = self.serializer_class(data = grupo_preguntas)
 
         if grupo_preguntas_serializer.is_valid():
             errores_grupo_pregunta = grupo_preguntas_serializer.errors
+            grupo_preguntas_serializer.validated_data['cantidad_preguntas'] = len(preguntas)
         else:
             validar_errores = True
             errores_grupo_pregunta = grupo_preguntas_serializer.errors
@@ -271,7 +275,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         # validar_errores = True
         if validar_errores:
             self.eliminar_justificaciones(justificaciones_creadas)
-            return Response({'error':error, 'mensaje': 'Hubó un error al crear el grupo de preguntas!'}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({'error':error, 'mensaje': 'Se encontraron errores al crear el grupo de preguntas!'}, status = status.HTTP_400_BAD_REQUEST)
 
         #Grupo Preguntas
         grupo_preguntas_serializer.save()
@@ -603,10 +607,11 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         if not grupo_preguntas:
             return Response({'mensaje', 'No existe un grupo de preguntas con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
         else:
-            preguntas = Pregunta.objects.filter(grupo = kwargs['pk'])
-            for pregunta in preguntas:
-                Justificacion.objects.filter(id = pregunta.justificacion_id).delete()
-                pregunta.delete()
-            grupo_preguntas.delete()
+            preguntas = Pregunta.objects.select_related('justificacion').filter(grupo = kwargs['pk'])
+            print(preguntas)
+            # for pregunta in preguntas:
+            #     Justificacion.objects.filter(id = pregunta.justificacion_id).delete()
+            #     pregunta.delete()
+            # grupo_preguntas.delete()
 
             return Response({'mensaje':'El grupo de preguntas ha sido eliminado!'}, status = status.HTTP_200_OK)

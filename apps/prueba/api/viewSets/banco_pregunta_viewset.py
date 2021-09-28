@@ -20,7 +20,7 @@ class BancoPreguntaViewSet(viewsets.ViewSet):
 
         if banco_pregunta_serializer.is_valid():
             banco_pregunta_serializer.save()
-            return Response(banco_pregunta_serializer.data, {'mensaje':'El banco de preguntas se creo exitosamente!'}, status=status.HTTP_201_CREATED)
+            return Response({'mensaje':'El banco de preguntas se creo exitosamente!'}, status=status.HTTP_201_CREATED)
         else:
             return Response({'mensaje':'Existen errores en los campos!', 'error': banco_pregunta_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -53,10 +53,12 @@ class BancoPreguntaViewSet(viewsets.ViewSet):
         if not banco_pregunta:
             return Response({'mensaje':'No existe un banco de preguntas con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
 
-        preguntas = Pregunta.objects.filter(banco_pregunta = kwargs['pk'], estado = True).only('justificacion_id', 'id')
-        if preguntas:
-            for pregunta in preguntas:
-                justificaciones.append(pregunta.justificacion_id)
+        # preguntas = Pregunta.objects.filter(banco_pregunta = kwargs['pk'], estado = True).related_name("justificacion_id")
+        # if preguntas:
+        #     for pregunta in preguntas:
+        #         pregunta.justificacion_id.delete()
+        #         pregunta.delete();
+                
+        banco_pregunta.delete();
 
-        print(justificaciones)
-        return Response({'mensaje':'El banco de preguntas ha sido eliminado!'}, status=status.HTTP_204_NO_CONTENT)
+        return Response({'mensaje':'El banco de preguntas ha sido eliminado!'}, status=status.HTTP_200_OK)

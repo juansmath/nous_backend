@@ -33,11 +33,6 @@ class EnunciadoGrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
         }
 
 class GrupoPreguntaSerializer(serializers.ModelSerializer):
-    def validate_cantidad_preguntas(self, value):
-        if value == '':
-            raise serializers.ValidationError('El campo es obligatorio')
-        return value
-
     def validate_banco_preguntas(self, value):
         if value == '':
             raise serializers.ValidationError('Debe asociarse un banco al grupo de preguntas')

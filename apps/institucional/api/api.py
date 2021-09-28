@@ -7,7 +7,8 @@ from apps.institucional.models import Programa, Facultad, NivelAcademico
 
 from apps.base.authentication_mixins import Authentication
 
-class ProgramaViewSet(Authentication, viewsets.ViewSet):
+# class ProgramaViewSet(Authentication, viewsets.ViewSet):
+class ProgramaViewSet(viewsets.ViewSet):
     model = Programa
     serializer_class = ProgramaSerializer
 
