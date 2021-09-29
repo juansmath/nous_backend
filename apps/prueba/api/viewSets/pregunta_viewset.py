@@ -81,7 +81,7 @@ class PreguntaViewSet(viewsets.ViewSet):
         justificacion_pregunta = request.data['justificacion']
         enunciados_pregunta = request.data['enunciados_pregunta']
         opciones_pregunta = request.data['opciones_pregunta']
-        
+
         justificacion_serializer = JustificacionSerializer(data = justificacion_pregunta)
         if justificacion_serializer.is_valid() != True:
             validar_errores = True
