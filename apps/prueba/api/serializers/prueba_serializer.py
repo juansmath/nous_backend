@@ -28,7 +28,7 @@ class PruebaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prueba
         exclude = ('estado',)
-        
+
     def to_representation(self, instance):
         return {
             'prueba':{
@@ -67,7 +67,7 @@ class PruebaEstudianteSerializer(serializers.ModelSerializer):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
         return value
-    
+
     def validate_docente(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
@@ -94,14 +94,25 @@ class PruebaEstudianteDetalleSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         prueba = Prueba.objects.filter(id = instance.prueba, estado = True).first()
-        prueba_serializer = PruebaSerializer(prueba, many = True)
+        prueba_serializer = PruebaSerializer(prueba)
 
-        estudiante = Estudiante.objects.filter(id = instance.estudiante).select_related('persona')
+        estudiante = Estudiante.objects.filter(id = instance.estudiante, estado=True).select_related('persona')
+        estudiante_serializer = EstudianteSerializer(estudiante)
+
+        nivel_ejecucion = NivelEjecucion.objects.filter(id = instance.nivel_ejecucion, estado=True).first()
+        nivel_ejecucion_serializer = NivelEjecucionSerializer(nivel_ejecucion)
+
         return {
             'id': instance.id,
             'prueba': prueba_serializer.data,
-            'estudiante': instance.estudiante.id,
-            'presentada': instance.presentada
+            'estudiante': estudiante_serializer.data,
+            'presentada': instance.presentada,
+            'calificada': instance.calificada,
+            'numero_aciertos': instance.numero_aciertos,
+            'numero_desaciertos': instance.numero_desaciertos,
+            'tiempo_empleado': instance.tiempo_empleado,
+            'puntaje_prueba': instance.puntaje_prueba,
+            'nivel_ejecucion': nivel_ejecucion_serializer.data
         }
 
 class HojaRespuestaSerializer(serializers.ModelSerializer):

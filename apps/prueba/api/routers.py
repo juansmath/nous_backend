@@ -16,7 +16,8 @@ router.register(r'banco_pregunta', BancoPreguntaViewSet, basename = 'banco_pregu
 router.register(r'grupo_pregunta', GrupoPreguntaViewSet, basename = 'grupo_pregunta')
 router.register(r'pregunta', PreguntaViewSet, basename= 'pregunta')
 router.register(r'prueba', PruebaViewSet, basename= 'prueba')
-router.register(r'pruebas_estudiante', PruebasEstudianteAsignarViewSet, basename= 'pruebas_estudiante')
+router.register(r'asignar_prueba', PruebasEstudianteAsignarViewSet, basename= 'asignar_prueba')
 router.register(r'responder_prueba', PresentarPruebaEstudianteViewSet, basename= 'responder_prueba')
+router.register(r'resultados_prueba', ResultadosPruebaViewSet, basename= 'resultados_prueba')
 
 urlpatterns = router.urls

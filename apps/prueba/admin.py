@@ -2,8 +2,9 @@ from django.contrib import admin
 from .models import ( Modulo, Competencia, NivelEjecucion, DescripcionNivelEjecucion, GrupoPregunta,
                      EnunciadoGrupoPregunta, OpcionPregunta, Justificacion, Pregunta, EnunciadoPregunta,
                      ImagenEnunciadoGrupoPregunta, ImagenEnunciadoPregunta, BancoPreguntas, Prueba,
-                     HojaRespuesta, NivelDificultad)
+                     HojaRespuesta, NivelDificultad, OpcionesLetras)
 
+admin.site.register(OpcionesLetras)
 admin.site.register(Modulo)
 admin.site.register(Competencia)
 admin.site.register(NivelEjecucion)

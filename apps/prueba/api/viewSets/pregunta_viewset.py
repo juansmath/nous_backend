@@ -131,13 +131,16 @@ class PreguntaViewSet(viewsets.ViewSet):
         numero_preguntas_banco = Pregunta.objects.filter(banco_preguntas = pregunta_serializer.validated_data['banco_preguntas'], estado=True)
         nivel_ejecucion = NivelEjecucion.objects.filter(modulo=pregunta_serializer.validated_data['banco_preguntas'],
                                                         nivel_dificultad=pregunta_serializer.validated_data['nivel_dificultad'], estado=True)
-        
+
         if not numero_preguntas_banco:
             pregunta_serializer.validated_data['valor_pregunta'] = nivel_ejecucion.puntaje_maximo
         else:
             valor_pregunta = nivel_ejecucion.puntaje_maximo/len(numero_preguntas_banco)+1
+            for pregunta in numero_preguntas_banco:
+                pregunta.valor_pregunta = valor_pregunta
+
             pregunta_serializer.validated_data['valor_pregunta'] = valor_pregunta
-            Pregunta.bulk_update(numero_preguntas_banco, {'valor_pregunta':valor_pregunta})
+            Pregunta.bulk_update(numero_preguntas_banco, 'valor_pregunta')
 
         pregunta_serializer.save()
         pregunta = self.get_queryset(pk=pregunta_serializer.data['id'])

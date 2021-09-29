@@ -5,33 +5,52 @@ from apps.base.models import BaseModel
 from apps.estudiante.models import Estudiante
 from apps.docente.models import Docente
 
-OPCIONES_LETRAS=[
-    ('A','A'),
-    ('B','B'),
-    ('C','C'),
-    ('D','D'),
-    ('E','E'),
-    ('F','F'),
-    ('G','G'),
-    ('H','H'),
-    ('I','I'),
-    ('J','J'),
-    ('K','K'),
-    ('L','L'),
-    ('M','M'),
-    ('N','N'),
-    ('O','O'),
-    ('P','P'),
-    ('R','R'),
-    ('S','S'),
-    ('T','T'),
-    ('U','U'),
-    ('V','V'),
-    ('W','W'),
-    ('X','X'),
-    ('Y','Y'),
-    ('Z','Z'),
-]
+class OpcionesLetras(BaseModel):
+    OPCIONES_LETRAS=[
+        ('A','A'),
+        ('B','B'),
+        ('C','C'),
+        ('D','D'),
+        ('E','E'),
+        ('F','F'),
+        ('G','G'),
+        ('H','H'),
+        ('I','I'),
+        ('J','J'),
+        ('K','K'),
+        ('L','L'),
+        ('M','M'),
+        ('N','N'),
+        ('O','O'),
+        ('P','P'),
+        ('R','R'),
+        ('S','S'),
+        ('T','T'),
+        ('U','U'),
+        ('V','V'),
+        ('W','W'),
+        ('X','X'),
+        ('Y','Y'),
+        ('Z','Z'),
+    ]
+
+    letra=models.CharField('Letra', max_length=1, null=False, blank=False, unique=True, choices=OPCIONES_LETRAS)
+
+    @property
+    def _history_user(self):
+        return self.changed_by
+
+    @_history_user.setter
+    def _history_user(self, value):
+        self.changed_by=value
+
+    class Meta:
+        ordering=['letra']
+        verbose_name='Opcion letra'
+        verbose_name_plural='Opciones letras'
+
+    def __str__(self):
+        return self.letra
 
 class Modulo(BaseModel):
     nombre_modulo=models.CharField('Nombre del módulo', max_length=100, null=False, blank=False)
@@ -54,7 +73,7 @@ class Modulo(BaseModel):
         return self.nombre_modulo
 
 class Competencia(BaseModel):
-    nombre_competencia=models.CharField('Nombre de la competencia', max_length=100, null=False, blank=False)
+    nombre_competencia=models.TextField('Nombre de la competencia', null=False, blank=False)
     porcentaje=models.FloatField('Porcentaje de la competencia', null=True, blank=True)
     modulo=models.ForeignKey(Modulo, on_delete=models.CASCADE)
     historial=HistoricalRecords()
@@ -220,7 +239,7 @@ class Justificacion(BaseModel):
 
 class Pregunta(BaseModel):
     grupo=models.ForeignKey(GrupoPregunta, on_delete=models.CASCADE, null=True, blank=True)
-    respuesta=models.CharField('Respuesta', max_length=1, null=False, blank=False, choices=OPCIONES_LETRAS)
+    respuesta=models.ForeignKey(OpcionesLetras, on_delete=models.CASCADE, null=False, blank=False)
     justificacion=models.OneToOneField(Justificacion, on_delete=models.CASCADE, null=False, blank=False)
     banco_preguntas=models.ForeignKey(BancoPreguntas, on_delete=models.CASCADE, null=True, blank=True)
     nivel_dificultad=models.ForeignKey(NivelDificultad, on_delete=models.CASCADE, null=True, blank=True)
@@ -245,7 +264,7 @@ class Pregunta(BaseModel):
 class OpcionPregunta(BaseModel):
     contenido_opcion=models.CharField('Contenido de la opción', max_length=250, null=False, blank=False)
     pregunta=models.ForeignKey(Pregunta, on_delete=models.CASCADE, blank=True, null=True)
-    letra=models.CharField('Letra', max_length=1, choices=OPCIONES_LETRAS, null=False, blank=False)
+    letra=models.ForeignKey(OpcionesLetras, on_delete=models.CASCADE, null=False, blank=False)
     historial=HistoricalRecords()
 
     @property
@@ -358,7 +377,7 @@ class PruebasEstudiante(BaseModel):
     @_history_user.setter
     def _history_user(self, value):
         self.changed_by=value
-        
+
     class Meta:
         ordering=['fecha_creacion',]
         verbose_name='Prueba Asiganda'
@@ -367,7 +386,7 @@ class PruebasEstudiante(BaseModel):
 class HojaRespuesta(BaseModel):
     prueba_asignada=models.ForeignKey(PruebasEstudiante, on_delete=models.CASCADE)
     pregunta=models.ForeignKey(Pregunta, on_delete=models.CASCADE, null=True, blank=True)
-    opcion_marcada=models.CharField('Opcion marcada', max_length=1,choices=OPCIONES_LETRAS, null=True, blank=True)
+    opcion_marcada=models.ForeignKey(OpcionesLetras, on_delete=models.CASCADE, null=False, blank=False)
     estudiante=models.ForeignKey(Estudiante, on_delete=models.CASCADE, null=False, blank=False)
     tiempo_empleado_pregunta=models.TimeField('Tiempo en responder la pregunta', null=False, blank=False)
     calificada=models.BooleanField('Calificada', default=False, null=False, blank=False)
