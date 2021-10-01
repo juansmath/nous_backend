@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from apps.prueba.api.serializers.pregunta_serializer import *
 
 from apps.prueba.models import (Pregunta, EnunciadoPregunta, ImagenEnunciadoPregunta, Justificacion,
-                                OpcionPregunta, NivelEjecucion)
+                                OpcionPregunta, NivelEjecucion, OpcionesLetras)
 
 class PreguntaViewSet(viewsets.ViewSet):
     model = Pregunta
@@ -128,19 +128,23 @@ class PreguntaViewSet(viewsets.ViewSet):
             justificacion = Justificacion.objects.filter(id = justificacion_serializer.data['id']).delete()
             return Response({'error':error}, status=status.HTTP_400_BAD_REQUEST)
 
-        numero_preguntas_banco = Pregunta.objects.filter(banco_preguntas = pregunta_serializer.validated_data['banco_preguntas'], estado=True)
-        nivel_ejecucion = NivelEjecucion.objects.filter(modulo=pregunta_serializer.validated_data['banco_preguntas'],
-                                                        nivel_dificultad=pregunta_serializer.validated_data['nivel_dificultad'], estado=True)
+        numero_preguntas_banco = Pregunta.objects.filter(banco_preguntas = pregunta_serializer.validated_data['banco_preguntas'],
+                                                         nivel_dificultad=pregunta_serializer.validated_data['nivel_dificultad'],
+                                                         estado=True)
+
+        nivel_ejecucion = NivelEjecucion.objects.filter(modulo=pregunta_serializer.validated_data['modulo'],
+                                                        nivel_dificultad=pregunta_serializer.validated_data['nivel_dificultad'], estado=True).first()
 
         if not numero_preguntas_banco:
             pregunta_serializer.validated_data['valor_pregunta'] = nivel_ejecucion.puntaje_maximo
         else:
-            valor_pregunta = nivel_ejecucion.puntaje_maximo/len(numero_preguntas_banco)+1
+            valor_pregunta = nivel_ejecucion.puntaje_maximo/(len(numero_preguntas_banco)+1)
+
             for pregunta in numero_preguntas_banco:
                 pregunta.valor_pregunta = valor_pregunta
 
             pregunta_serializer.validated_data['valor_pregunta'] = valor_pregunta
-            Pregunta.bulk_update(numero_preguntas_banco, 'valor_pregunta')
+            Pregunta.objects.bulk_update(numero_preguntas_banco, ['valor_pregunta'])
 
         pregunta_serializer.save()
         pregunta = self.get_queryset(pk=pregunta_serializer.data['id'])
@@ -165,6 +169,7 @@ class PreguntaViewSet(viewsets.ViewSet):
         pregunta_actualizada = request.data['pregunta']
         justificacion = request.data['justificacion']
         editar_justificacion = request.data["editar_justificacion"]
+        editar_respuesta = request.data["editar_respuesta"]
         opciones_pregunta = request.data['opciones_pregunta']
         opciones_pregunta_editar = request.data['opciones_pregunta_editar']
         opciones_pregunta_borrar = request.data['opciones_pregunta_borrar']
@@ -172,20 +177,25 @@ class PreguntaViewSet(viewsets.ViewSet):
         enunciados_pregunta_editar = request.data['enunciados_pregunta_editar']
         enunciados_pregunta_borrar = request.data['enunciados_pregunta_borrar']
 
+        del pregunta_actualizada['grupo']
+
+        datos_pregunta = self.model.objects.select_related('justificacion', 'respuesta').get(id = kwargs['pk'])
+
         if editar_justificacion:
-            datos_pregunta = self.model.objects.select_related('justificacion').filter(id = kwargs['pk']).first()
             datos_justificacion = datos_pregunta.justificacion
-        else:
-            datos_pregunta = self.model.objects.filter(id = kwargs['pk']).first()
 
         if not datos_pregunta:
-            return Response({'error':'No existe una pregunta con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({'mensaje':'No existe una pregunta con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
 
-        pregunta_serializer = self.serializer_class(datos_pregunta, pregunta_actualizada)
+        opcion_letra = OpcionesLetras.objects.get(id=pregunta_actualizada['respuesta'])
+        pregunta_actualizada['respuesta'] = opcion_letra
 
-        if pregunta_serializer.is_valid():
-            error_pregunta.append(pregunta_serializer.errors)
-        else:
+        if editar_respuesta:
+            print(opcion_letra)
+
+        pregunta_serializer = self.serializer_class(datos_pregunta, data=pregunta_actualizada)
+
+        if pregunta_serializer.is_valid() != True:
             validar_errores = True
             error_pregunta.append(pregunta_serializer.errors)
 
@@ -193,9 +203,9 @@ class PreguntaViewSet(viewsets.ViewSet):
         error.update(error_pregunta)
 
         #Validación de justificacion
-        if(editar_justificacion):
+        if editar_justificacion:
             if not datos_justificacion:
-                return Response({'error':'Esta Pregunta no tiene asociada ninguna justificación!'}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({'mensaje':'Esta Pregunta no tiene asociada ninguna justificación!'}, status=status.HTTP_400_BAD_REQUEST)
 
             justificacion_serializer = JustificacionSerializer(datos_justificacion, justificacion)
             if justificacion_serializer.is_valid():
@@ -264,14 +274,13 @@ class PreguntaViewSet(viewsets.ViewSet):
             for opcion in opciones_pregunta_borrar:
                 OpcionPregunta.objects.filter(id=opcion['id']).delete()
 
-        # pregunta_serializer.update(datos_pregunta, pregunta_actualizada)
-        pregunta = pregunta_serializer.data['id']
+        pregunta_serializer.update(datos_pregunta, pregunta_actualizada)
 
         for enunciado in enunciados_pregunta_validas:
-            enunciado.pregunta = pregunta
+            enunciado.pregunta = datos_pregunta
 
         for opcion in opciones_pregunta_validas:
-            opcion.pregunta = pregunta
+            opcion.pregunta = datos_pregunta
 
         EnunciadoPregunta.objects.bulk_create(enunciados_pregunta_validas)
         OpcionPregunta.objects.bulk_create(opciones_pregunta_validas)

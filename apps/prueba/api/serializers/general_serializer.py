@@ -1,6 +1,11 @@
 from rest_framework import serializers
 
-from apps.prueba.models import Modulo, Competencia, NivelEjecucion, DescripcionNivelEjecucion
+from apps.prueba.models import Modulo, Competencia, NivelEjecucion, DescripcionNivelEjecucion, OpcionesLetras
+
+class OpcionesLetrasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = OpcionesLetras
+        exclude = ('estado','fecha_creacion', 'fecha_eliminacion', 'fecha_actualizacion')
 
 class ModuloSerializer(serializers.ModelSerializer):
     class Meta:

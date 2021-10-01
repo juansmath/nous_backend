@@ -49,8 +49,8 @@ class OpcionesLetras(BaseModel):
         verbose_name='Opcion letra'
         verbose_name_plural='Opciones letras'
 
-    def __str__(self):
-        return self.letra
+    # def __str__(self):
+    #     return self.letra
 
 class Modulo(BaseModel):
     nombre_modulo=models.CharField('Nombre del módulo', max_length=100, null=False, blank=False)

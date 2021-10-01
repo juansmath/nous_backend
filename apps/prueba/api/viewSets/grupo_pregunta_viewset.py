@@ -7,7 +7,7 @@ from apps.prueba.api.serializers.grupo_pregunta_serializer import *
 from apps.prueba.api.serializers.pregunta_serializer import *
 
 from apps.prueba.models import (GrupoPregunta, EnunciadoGrupoPregunta,Pregunta, EnunciadoPregunta,
-                                ImagenEnunciadoPregunta, Justificacion, OpcionPregunta)
+                                ImagenEnunciadoPregunta, Justificacion, OpcionPregunta, NivelEjecucion)
 
 class GrupoPreguntaViewSet(viewsets.ViewSet):
     model = GrupoPregunta
@@ -112,7 +112,11 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             pregunta_valida = Pregunta(
                 grupo = pregunta_serializer.validated_data['grupo'],
                 respuesta = pregunta_serializer.validated_data['respuesta'],
-                justificacion = pregunta_serializer.validated_data['justificacion']
+                justificacion = pregunta_serializer.validated_data['justificacion'],
+                banco_preguntas = pregunta_serializer.validated_data['banco_preguntas'],
+                nivel_dificultad = pregunta_serializer.validated_data['nivel_dificultad'],
+                modulo = pregunta_serializer.validated_data['modulo'],
+                competencia = pregunta_serializer.validated_data['competencia'],
             )
         else:
             validar_errores = True
@@ -199,6 +203,24 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         for justificacion in justificaciones:
             Justificacion.objects.filter(id = justificacion['id']).delete()
 
+    def obtener_nivel_ejecucion(self, modulo=None, nivel_dificultad=None):
+        nivel_ejecucion = {}
+
+        nivel_ejecucion = NivelEjecucion.objects.get(modulo=modulo, nivel_dificultad=nivel_dificultad, estado=True)
+        return nivel_ejecucion.puntaje_maximo
+
+    def obtener_preguntas_registradas(self, banco_preguntas='', nivel_dificultad=''):
+        return Pregunta.objects.filter(banco_preguntas=banco_preguntas, nivel_dificultad=nivel_dificultad, estado=True)
+
+    def calcular_valor_pregunta(self, cantidad_preguntas=0, puntaje_maximo=0):
+        return puntaje_maximo/(cantidad_preguntas)
+
+    def actualizar_valor_preguntas(self, preguntas, valor_pregunta):
+        for pregunta in preguntas:
+            pregunta.valor_pregunta = valor_pregunta
+
+        Pregunta.objects.bulk_update(preguntas, ['valor_pregunta'])
+
     def get_queryset(self, pk = None):
         if pk is None:
             return self.model.objects.filter(estado = True)
@@ -221,7 +243,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         grupo_preguntas = request.data['grupo_preguntas']
         enunciados_grupo_pregunta = request.data['enunciados_grupo_pregunta']
         preguntas = request.data['preguntas']
-        
+
         grupo_preguntas_serializer = self.serializer_class(data = grupo_preguntas)
 
         if grupo_preguntas_serializer.is_valid():
@@ -287,8 +309,15 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         EnunciadoGrupoPregunta.objects.bulk_create(enunciados_grupo_pregunta_validas)
 
         #Registro de preguntas
-        for pregunta in preguntas_validas:
+        for indice, pregunta in enumerate(preguntas_validas):
+            preguntas_registradas = self.obtener_preguntas_registradas(pregunta.banco_preguntas, pregunta.nivel_dificultad)
+            puntaje_maximo = self.obtener_nivel_ejecucion(pregunta.modulo, pregunta.nivel_dificultad)
+            valor_pregunta = self.calcular_valor_pregunta(len(preguntas_registradas)+indice+1, puntaje_maximo)
+
             pregunta.grupo = grupo
+            pregunta.valor_pregunta = valor_pregunta
+
+            self.actualizar_valor_preguntas(preguntas_registradas, valor_pregunta)
 
         preguntas_creadas = Pregunta.objects.bulk_create(preguntas_validas)
 
