@@ -6,6 +6,9 @@ from apps.prueba.api.serializers.grupo_pregunta_serializer import GrupoPreguntaD
 from apps.prueba.models import BancoPreguntas, Pregunta,GrupoPregunta, Competencia
 
 class BancoPreguntasSerializer(serializers.ModelSerializer):
+    modulo_id = serializers.IntegerField(write_only=True)
+    docente_id = serializers.IntegerField(write_only=True, required=False, default=None)
+
     def validate_nombre_banco(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
@@ -24,6 +27,7 @@ class BancoPreguntasSerializer(serializers.ModelSerializer):
     class Meta:
         model = BancoPreguntas
         exclude = ('estado',)
+        depth = 1
 
 class BancoPreguntasDetalleSerializer(serializers.ModelSerializer):
     class Meta:

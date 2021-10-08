@@ -26,24 +26,24 @@ class PruebaViewSet(viewsets.ViewSet):
             prueba_serializer.save()
             return Response({'mensaje':'Se registro correctamente la prueba'}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error':'Existen errores en los campos!', 'error': prueba_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'mensaje':'Existen errores en los campos!', 'error': prueba_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def update(self, request, *args, **kwargs):
-        prueba = self.model.objects.filter(id = kwargs['pk']).first()
+        prueba = self.model.objects.get(id = kwargs['pk'], estado=True)
         if not prueba:
-            return Response({'error':'No existe una prueba con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
-        
+            return Response({'mensaje':'No existe una prueba con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
+
         prueba_serializer = self.serializer_class(prueba, request.data)
         if prueba_serializer.is_valid():
             prueba_serializer.update(prueba, request.data)
             return Response({'mensaje':'Se actualizo correctamente la prueba!'}, status=status.HTTP_201_CREATED)
         else:
-            return Response({'error':'Existen errores en los campos', 'error': prueba_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'mensaje':'Existen errores en los campos', 'error': prueba_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self, request, *args, **kwargs):
         prueba = self.model.objects.filter(id = kwargs['pk']).first()
         if not prueba:
-            return Response({'error':'No existe una prueba con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'mensaje':'No existe una prueba con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
 
         prueba_serializer = PruebaSerializer(prueba)
         return Response(prueba_serializer.data, status=status.HTTP_200_OK)
@@ -51,7 +51,7 @@ class PruebaViewSet(viewsets.ViewSet):
     def destroy(self, request, *args, **kwargs):
         prueba = self.model.objects.filter(id = kwargs['pk']).first()
         if not prueba:
-            return Response({'error':'No existe una prueba con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'mensaje':'No existe una prueba con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
 
         prueba.delete()
         return Response({'mensaje':'La prueba se borro exitosamente!'}, status=status.HTTP_200_OK)
@@ -162,7 +162,6 @@ class ResultadosPruebaViewSet(viewsets.ViewSet):
 
         resultados_prueba_serializer = PruebaEstudianteDetalleSerializer(resultados_prueba)
         return Response(resultados_prueba_serializer.data, status=status.HTTP_200_OK)
-
 
 class PresentarPruebaEstudianteViewSet(viewsets.ViewSet):
     model = HojaRespuesta

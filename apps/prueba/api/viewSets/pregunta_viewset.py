@@ -7,7 +7,8 @@ from rest_framework.response import Response
 from apps.prueba.api.serializers.pregunta_serializer import *
 
 from apps.prueba.models import (Pregunta, EnunciadoPregunta, ImagenEnunciadoPregunta, Justificacion,
-                                OpcionPregunta, NivelEjecucion, OpcionesLetras)
+                                OpcionPregunta, NivelEjecucion, OpcionesLetras, BancoPreguntas, NivelDificultad,
+                                Modulo, Competencia)
 
 class PreguntaViewSet(viewsets.ViewSet):
     model = Pregunta
@@ -66,6 +67,37 @@ class PreguntaViewSet(viewsets.ViewSet):
             'errores_opciones': errores_opciones
         }
 
+    def obtener_nivel_ejecucion(self, modulo=None, nivel_dificultad=None):
+        return NivelEjecucion.objects.get(modulo=modulo, nivel_dificultad=nivel_dificultad, estado=True)
+
+    def obtener_preguntas_registradas(self, banco_preguntas='', nivel_dificultad=''):
+        return Pregunta.objects.filter(banco_preguntas=banco_preguntas, nivel_dificultad=nivel_dificultad, estado=True)
+
+    def calcular_valor_pregunta(self, cantidad_preguntas=0, puntaje_maximo=0):
+        return puntaje_maximo/(cantidad_preguntas)
+
+    def actualizar_valor_preguntas(self, preguntas, valor_pregunta):
+        for pregunta in preguntas:
+            pregunta.valor_pregunta = valor_pregunta
+
+        Pregunta.objects.bulk_update(preguntas, ['valor_pregunta'])
+
+    def actualizar_preguntas(self, banco_preguntas_id, nivel_dificultad_id, modulo_id, nueva=False):
+        valor_pregunta = 0
+        banco_preguntas = self.obtener_preguntas_registradas(banco_preguntas_id, nivel_dificultad_id)
+        cantidad_preguntas = len(banco_preguntas)
+        nivel_ejecucion = self.obtener_nivel_ejecucion(modulo_id, nivel_dificultad_id)
+
+        if nueva:
+            if cantidad_preguntas > 0:
+                valor_pregunta = self.calcular_valor_pregunta(cantidad_preguntas, nivel_ejecucion.puntaje_maximo)
+            else:
+                valor_pregunta = self.calcular_valor_pregunta(cantidad_preguntas+1, nivel_ejecucion.puntaje_maximo)
+
+        self.actualizar_valor_preguntas(banco_preguntas, valor_pregunta)
+
+        return valor_pregunta
+
     def list(self, request):
         data = self.get_queryset()
         data = PreguntaSerializer(data, many = True)
@@ -94,7 +126,7 @@ class PreguntaViewSet(viewsets.ViewSet):
 
         error.update(errores_justificacion)
         justificacion_serializer.save()
-        pregunta['justificacion'] = justificacion_serializer.data['id']
+        pregunta['justificacion_id'] = justificacion_serializer.data['id']
 
         pregunta_serializer = self.serializer_class(data = pregunta)
         if pregunta_serializer.is_valid() != True:
@@ -128,23 +160,11 @@ class PreguntaViewSet(viewsets.ViewSet):
             justificacion = Justificacion.objects.filter(id = justificacion_serializer.data['id']).delete()
             return Response({'error':error}, status=status.HTTP_400_BAD_REQUEST)
 
-        numero_preguntas_banco = Pregunta.objects.filter(banco_preguntas = pregunta_serializer.validated_data['banco_preguntas'],
-                                                         nivel_dificultad=pregunta_serializer.validated_data['nivel_dificultad'],
-                                                         estado=True)
+        modulo_id = pregunta['modulo_id']
+        banco_preguntas_id = pregunta['banco_preguntas_id']
+        nivel_dificultad_id = pregunta['nivel_dificultad_id']
 
-        nivel_ejecucion = NivelEjecucion.objects.filter(modulo=pregunta_serializer.validated_data['modulo'],
-                                                        nivel_dificultad=pregunta_serializer.validated_data['nivel_dificultad'], estado=True).first()
-
-        if not numero_preguntas_banco:
-            pregunta_serializer.validated_data['valor_pregunta'] = nivel_ejecucion.puntaje_maximo
-        else:
-            valor_pregunta = nivel_ejecucion.puntaje_maximo/(len(numero_preguntas_banco)+1)
-
-            for pregunta in numero_preguntas_banco:
-                pregunta.valor_pregunta = valor_pregunta
-
-            pregunta_serializer.validated_data['valor_pregunta'] = valor_pregunta
-            Pregunta.objects.bulk_update(numero_preguntas_banco, ['valor_pregunta'])
+        pregunta_serializer.validated_data['valor_pregunta'] = self.actualizar_preguntas(banco_preguntas_id, nivel_dificultad_id, modulo_id, True)
 
         pregunta_serializer.save()
         pregunta = self.get_queryset(pk=pregunta_serializer.data['id'])
@@ -169,7 +189,6 @@ class PreguntaViewSet(viewsets.ViewSet):
         pregunta_actualizada = request.data['pregunta']
         justificacion = request.data['justificacion']
         editar_justificacion = request.data["editar_justificacion"]
-        editar_respuesta = request.data["editar_respuesta"]
         opciones_pregunta = request.data['opciones_pregunta']
         opciones_pregunta_editar = request.data['opciones_pregunta_editar']
         opciones_pregunta_borrar = request.data['opciones_pregunta_borrar']
@@ -177,36 +196,58 @@ class PreguntaViewSet(viewsets.ViewSet):
         enunciados_pregunta_editar = request.data['enunciados_pregunta_editar']
         enunciados_pregunta_borrar = request.data['enunciados_pregunta_borrar']
 
-        del pregunta_actualizada['grupo']
+        datos_pregunta = self.model.objects.select_related('justificacion',
+                                                           'respuesta',
+                                                           'banco_preguntas',
+                                                           'nivel_dificultad',
+                                                           'modulo',
+                                                           'competencia').get(id = kwargs['pk'])
 
-        datos_pregunta = self.model.objects.select_related('justificacion', 'respuesta').get(id = kwargs['pk'])
-
-        if editar_justificacion:
-            datos_justificacion = datos_pregunta.justificacion
+        datos_justificacion = datos_pregunta.justificacion
+        datos_respuesta = datos_pregunta.respuesta
+        datos_banco_preguntas = datos_pregunta.banco_preguntas
+        datos_nivel_dificultad = datos_pregunta.nivel_dificultad
+        datos_competencia = datos_pregunta.competencia
+        datos_modulo = datos_pregunta.modulo
 
         if not datos_pregunta:
             return Response({'mensaje':'No existe una pregunta con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
 
-        opcion_letra = OpcionesLetras.objects.get(id=pregunta_actualizada['respuesta'])
-        pregunta_actualizada['respuesta'] = opcion_letra
+        banco_preguntas_id = pregunta_actualizada['banco_preguntas_id']
+        nivel_dificultad_id = pregunta_actualizada['nivel_dificultad_id']
+        respuesta_id = pregunta_actualizada['respuesta_id']
+        modulo_id = pregunta_actualizada['modulo_id']
+        competencia_id = pregunta_actualizada['competencia_id']
 
-        if editar_respuesta:
-            print(opcion_letra)
+        if nivel_dificultad_id != datos_nivel_dificultad.id and banco_preguntas_id != datos_banco_preguntas.id:
+            #Actualizar el valor de las preguntas nuevas
+            valor_pregunta = self.actualizar_preguntas(banco_preguntas_id, nivel_dificultad_id, modulo_id, True)
+            pregunta_actualizada['valor_pregunta'] = valor_pregunta
 
-        pregunta_serializer = self.serializer_class(datos_pregunta, data=pregunta_actualizada)
+            #Actualizar valores de otras preguntas
+            self.actualizar_preguntas(datos_banco_preguntas.id, datos_nivel_dificultad.id, modulo_id)
 
-        if pregunta_serializer.is_valid() != True:
-            validar_errores = True
-            error_pregunta.append(pregunta_serializer.errors)
+        elif nivel_dificultad_id == datos_nivel_dificultad.id and banco_preguntas_id != datos_banco_preguntas.id:
+            #Actualizar el valor de las preguntas nuevas
+            valor_pregunta = self.actualizar_preguntas(banco_preguntas_id, nivel_dificultad_id, modulo_id, True)
+            pregunta_actualizada['valor_pregunta'] = valor_pregunta
 
-        error_pregunta = {'pregunta': error_pregunta}
-        error.update(error_pregunta)
+            #Actualizar valores de otras preguntas
+            self.actualizar_preguntas(datos_banco_preguntas.id, nivel_dificultad_id, modulo_id)
+
+        elif nivel_dificultad_id != datos_nivel_dificultad.id and banco_preguntas_id == datos_banco_preguntas.id:
+            #Actualizar el valor de las preguntas nuevas
+            valor_pregunta = self.actualizar_preguntas(banco_preguntas_id, nivel_dificultad_id, modulo_id, True)
+            pregunta_actualizada['valor_pregunta'] = valor_pregunta
+
+            #Actualizar valores de otras preguntas
+            self.actualizar_preguntas(banco_preguntas_id, datos_nivel_dificultad.id, modulo_id)
+        else:
+            pregunta_actualizada['nivel_dificultad_id'] = datos_nivel_dificultad.id
+            pregunta_actualizada['banco_preguntas_id'] = datos_banco_preguntas.id
 
         #Validación de justificacion
         if editar_justificacion:
-            if not datos_justificacion:
-                return Response({'mensaje':'Esta Pregunta no tiene asociada ninguna justificación!'}, status=status.HTTP_400_BAD_REQUEST)
-
             justificacion_serializer = JustificacionSerializer(datos_justificacion, justificacion)
             if justificacion_serializer.is_valid():
                 justificacion_serializer.update(datos_justificacion, justificacion)
@@ -216,6 +257,15 @@ class PreguntaViewSet(viewsets.ViewSet):
 
         errores_justificacion = {'justificacion': errores_justificacion}
         error.update(errores_justificacion)
+
+        pregunta_serializer = self.serializer_class(datos_pregunta, pregunta_actualizada)
+
+        if pregunta_serializer.is_valid() != True:
+            validar_errores = True
+            error_pregunta.append(pregunta_serializer.errors)
+
+        error_pregunta = {'pregunta': error_pregunta}
+        error.update(error_pregunta)
 
         #validación de los enunciados para la pregunta
         if len(enunciados_pregunta) != 0:

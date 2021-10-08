@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from apps.prueba.api.serializers.banco_pregunta_serializer import BancoPreguntasSerializer, BancoPreguntasDetalleSerializer
 
-from apps.prueba.models import BancoPreguntas, Pregunta, GrupoPregunta
+from apps.prueba.models import BancoPreguntas, Pregunta, GrupoPregunta, Modulo
 
 class BancoPreguntaViewSet(viewsets.ViewSet):
     model = BancoPreguntas
@@ -33,22 +33,22 @@ class BancoPreguntaViewSet(viewsets.ViewSet):
         return Response(serializer_banco_pregunta.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
-        banco_pregunta = self.model.objects.filter(id = kwargs['pk'], estado = True)
+        banco_pregunta = self.model.objects.get(id = kwargs['pk'], estado = True)
 
         if not banco_pregunta:
             return Response({'mensaje':'No existe un banco de preguntas con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
 
-        banco_pregunta_serializer = self.serializer_class(banco_pregunta, request.data)
+        banco_pregunta_serializer = self.serializer_class(banco_pregunta, data=request.data)
         if banco_pregunta_serializer.is_valid():
             banco_pregunta_serializer.update(banco_pregunta, request.data)
-            return Response(banco_pregunta_serializer, {'mensaje':'El banco se ha actulizado correctamente!'}, status=status.HTTP_201_CREATED)
+            return Response({'mensaje':'El banco se ha actulizado correctamente!'}, status=status.HTTP_201_CREATED)
         else:
             return Response({'mensaje':'Existen errores en los campos!', 'error': banco_pregunta_serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
     def destroy(self, request, *args, **kwargs):
         justificaciones = []
 
-        banco_pregunta = self.model.objects.filter(id = kwargs['pk'], estado = True)
+        banco_pregunta = self.model.objects.get(id = kwargs['pk'], estado = True)
 
         if not banco_pregunta:
             return Response({'mensaje':'No existe un banco de preguntas con los datos suministrados!'}, status=status.HTTP_400_BAD_REQUEST)
@@ -58,7 +58,7 @@ class BancoPreguntaViewSet(viewsets.ViewSet):
         #     for pregunta in preguntas:
         #         pregunta.justificacion_id.delete()
         #         pregunta.delete();
-                
+
         banco_pregunta.delete();
 
         return Response({'mensaje':'El banco de preguntas ha sido eliminado!'}, status=status.HTTP_200_OK)

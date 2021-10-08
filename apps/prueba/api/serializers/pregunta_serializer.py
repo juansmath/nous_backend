@@ -95,6 +95,15 @@ class OpcionPreguntaDetalleSerializer(serializers.ModelSerializer):
         }
 
 class PreguntaSerializer(serializers.ModelSerializer):
+    competencia_id = serializers.IntegerField(write_only=True)
+    justificacion_id = serializers.IntegerField(write_only=True)
+    modulo_id = serializers.IntegerField(write_only=True)
+    respuesta_id = serializers.IntegerField(write_only=True)
+    banco_preguntas_id = serializers.IntegerField(write_only=True)
+    nivel_dificultad_id = serializers.IntegerField(write_only=True)
+    docente_id = serializers.IntegerField(write_only=True, required=False, default=None)
+    # grupo_id = serializers.IntegerField(write_only=True, required=False, default=None)
+
     def validate_respuesta(self, value):
         if value == '':
             raise serializers.ValidationError('Debe seleccionar la respuesta')
@@ -113,6 +122,7 @@ class PreguntaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Pregunta
         exclude = ('estado',)
+        depth = 1
 
 class PreguntaDetalleSerializer(serializers.ModelSerializer):
     class Meta:

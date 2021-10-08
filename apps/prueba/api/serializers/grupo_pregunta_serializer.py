@@ -33,6 +33,9 @@ class EnunciadoGrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
         }
 
 class GrupoPreguntaSerializer(serializers.ModelSerializer):
+    banco_preguntas_id = serializers.IntegerField(write_only=True)
+    docente_id = serializers.IntegerField(write_only=True, required=False, default=None)
+
     def validate_banco_preguntas(self, value):
         if value == '':
             raise serializers.ValidationError('Debe asociarse un banco al grupo de preguntas')
@@ -41,6 +44,7 @@ class GrupoPreguntaSerializer(serializers.ModelSerializer):
     class Meta:
         model = GrupoPregunta
         exclude = ('estado',)
+        depth = 1
 
 class GrupoPreguntaDetalleSerializer(serializers.ModelSerializer):
     class Meta:

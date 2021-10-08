@@ -10,6 +10,8 @@ from apps.estudiante.models import Estudiante
 from apps.docente.models import Docente
 
 class PruebaSerializer(serializers.ModelSerializer):
+    docente_id = serializers.IntegerField(write_only=True, required=False, default=None)
+
     def validate_nombre_prueba(self, value):
         if value == '':
             raise serializers.ValidationError('El campo es obligatorio')
@@ -28,6 +30,7 @@ class PruebaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Prueba
         exclude = ('estado',)
+        depth = 1
 
     def to_representation(self, instance):
         return {

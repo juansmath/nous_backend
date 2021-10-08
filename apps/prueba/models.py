@@ -163,6 +163,7 @@ class BancoPreguntas(BaseModel):
     nombre_banco=models.CharField('Nombre del banco de preguntas', max_length=100, null=False, blank=False, unique=True)
     modulo=models.ForeignKey(Modulo, on_delete=models.CASCADE)
     competencias=models.ManyToManyField(Competencia)
+    docente=models.ForeignKey(Docente, on_delete=models.CASCADE, blank=True, null=True)
     historial=HistoricalRecords()
 
     @property
@@ -183,9 +184,10 @@ class BancoPreguntas(BaseModel):
         return self.nombre_banco
 
 class GrupoPregunta(BaseModel):
-    nombre_grupo=models.CharField('Nombre del grupo', max_length=200, blank=False, null=False, unique=True)
+    nombre_grupo=models.CharField('Nombre del grupo', max_length=200, blank=False, null=False)
     cantidad_preguntas=models.PositiveSmallIntegerField('Cantidad maxíma de preguntas', default=0, null=True, blank=True)
     banco_preguntas=models.ForeignKey(BancoPreguntas, on_delete=models.CASCADE, null=False, blank=False)
+    docente=models.ForeignKey(Docente, on_delete=models.CASCADE, null=True, blank=True)
     historial=HistoricalRecords()
 
     @property
@@ -238,11 +240,12 @@ class Justificacion(BaseModel):
         verbose_name_plural='Justificaciones'
 
 class Pregunta(BaseModel):
+    docente=models.ForeignKey(Docente, on_delete=models.CASCADE, null=True, blank=True)
     grupo=models.ForeignKey(GrupoPregunta, on_delete=models.CASCADE, null=True, blank=True)
     respuesta=models.ForeignKey(OpcionesLetras, on_delete=models.CASCADE, null=False, blank=False)
     justificacion=models.OneToOneField(Justificacion, on_delete=models.CASCADE, null=False, blank=False)
-    banco_preguntas=models.ForeignKey(BancoPreguntas, on_delete=models.CASCADE, null=True, blank=True)
-    nivel_dificultad=models.ForeignKey(NivelDificultad, on_delete=models.CASCADE, null=True, blank=True)
+    banco_preguntas=models.ForeignKey(BancoPreguntas, on_delete=models.CASCADE, null=False, blank=False)
+    nivel_dificultad=models.ForeignKey(NivelDificultad, on_delete=models.CASCADE, null=False, blank=False)
     modulo=models.ForeignKey(Modulo, on_delete=models.CASCADE, null=False, blank=False)
     competencia=models.ForeignKey(Competencia, on_delete=models.CASCADE, null=False, blank=False)
     valor_pregunta=models.FloatField('Valor de la pregutna', default=0, null=False, blank=True)
@@ -386,11 +389,10 @@ class PruebasEstudiante(BaseModel):
 class HojaRespuesta(BaseModel):
     prueba_asignada=models.ForeignKey(PruebasEstudiante, on_delete=models.CASCADE)
     pregunta=models.ForeignKey(Pregunta, on_delete=models.CASCADE, null=True, blank=True)
-    opcion_marcada=models.ForeignKey(OpcionesLetras, on_delete=models.CASCADE, null=False, blank=False)
+    opcion_marcada=models.ForeignKey(OpcionesLetras, on_delete=models.CASCADE, null=True, blank=True)
     estudiante=models.ForeignKey(Estudiante, on_delete=models.CASCADE, null=False, blank=False)
     tiempo_empleado_pregunta=models.TimeField('Tiempo en responder la pregunta', null=False, blank=False)
-    calificada=models.BooleanField('Calificada', default=False, null=False, blank=False)
-    nota=models.BooleanField('Nota', default=False, null=False, blank=False)
+    calificacion=models.BooleanField('Calificación', default=False, null=False, blank=False)
     historial=HistoricalRecords()
 
     @property
