@@ -90,6 +90,24 @@ class PruebaEstudianteSerializer(serializers.ModelSerializer):
         model = PruebasEstudiante
         exclude = ('estado',)
 
+    def to_representation(self, instance):
+        estudiante = Estudiante.objects.get(id = instance.estudiante.id, estado = True)
+        estudiante_serializer = EstudianteSerializer(estudiante)
+
+        return {
+            'estudiante': estudiante_serializer.data,
+            # 'docente': instance.docente.id if instance.docente.id is not None else '',
+            'prueba': instance.prueba.id,
+            'modulo': instance.modulo,
+            'presentada': instance.presentada,
+            'calificada': instance.calificada,
+            'numero_aciertos': instance.numero_aciertos,
+            'numero_desaciertos': instance.numero_desaciertos,
+            'tiempo_empleado': instance.tiempo_empleado,
+            'nivel_ejecucion': instance.nivel_ejecucion,
+            'puntaje_prueba': instance.puntaje_prueba,
+        }
+
 class PruebaEstudianteDetalleSerializer(serializers.ModelSerializer):
     class Meta:
         model = PruebasEstudiante
@@ -144,7 +162,7 @@ class HojaRespuestaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError('Estudiante no seleccionado')
         return value
 
-    def validate_nota(self, value):
+    def validate_calificacion(self, value):
         if value == '':
             raise serializers.ValidationError('Se debe de calificar la prueba')
         return value

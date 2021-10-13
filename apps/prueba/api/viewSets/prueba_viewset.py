@@ -60,7 +60,7 @@ class PruebasEstudianteAsignarViewSet(viewsets.ViewSet):
     model = PruebasEstudiante
     serializer_class = PruebaEstudianteSerializer
 
-    def crear_asignacion_prueba_estudaintes(self, estudiantes=[]):
+    def crear_asignacion_prueba_estudiantes(self, estudiantes=[]):
         validar_errores = False
         asignaciones_prueba_validas, errores_asignacion_prueba = [], []
 
@@ -87,7 +87,7 @@ class PruebasEstudianteAsignarViewSet(viewsets.ViewSet):
         asignaciones_prueba_validas = []
         errores_asignacion_prueba, error = [], {}
 
-        datos_asignaciones = self.crear_asignacion_prueba_estudaintes(request.data['estudiantes'])
+        datos_asignaciones = self.crear_asignacion_prueba_estudiantes(request.data['estudiantes'])
 
         validar_errores = datos_asignaciones['validar_errores']
         asignaciones_prueba_validas = datos_asignaciones['asignaciones_prueba_validas']
@@ -108,13 +108,13 @@ class PruebasEstudianteAsignarViewSet(viewsets.ViewSet):
         errores_asignacion_prueba, error = [], {}
 
         borrar_asignaciones = request.data['borrar_asignaciones']
-        
+
         datos_asignacion_prueba = self.model.objects.filter(id= kwargs['pk']).first()
-        
+
         if not datos_asignacion_prueba:
-            return Response({'error':'No existe una asiganción prueba con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
-        
-        datos_asignaciones = self.crear_asignacion_prueba_estudaintes(request.data['estudiantes'])
+            return Response({'mensaje':'No existe una asiganción prueba con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
+
+        datos_asignaciones = self.crear_asignacion_prueba_estudiantes(request.data['estudiantes'])
 
         validar_errores = datos_asignaciones['validar_errores']
         asignaciones_prueba_validas = datos_asignaciones['asignaciones_prueba_validas']
@@ -123,7 +123,7 @@ class PruebasEstudianteAsignarViewSet(viewsets.ViewSet):
         error.update(errores_asignacion_prueba)
 
         if validar_errores:
-            return Response({'error':'Ocurrió un error al asignar la prueba a los estudaintes!'}, error, status=status.HTTP_400_BAD)
+            return Response({'mensaje':'Ocurrió un error al asignar la prueba a los estudaintes!'}, error, status=status.HTTP_400_BAD)
 
         for asignacion in borrar_asignaciones:
             self.model.objects.filter(id = kwargs['pk']).delete()
@@ -155,13 +155,14 @@ class ResultadosPruebaViewSet(viewsets.ViewSet):
     @action(methods=['get'], detail=False, url_path='')
     def obtener_resultados_prueba_estudiante(self, request):
         datos = json.loads(request.query_params.get('datos'))
-        resultados_prueba = self.model.objects.filter(estudiante=datos['estudiante'], prueba=datos['prueba'], presentada=True).first()
+        resultados_prueba = self.model.objects.get(estudiante=datos['estudiante'], prueba=datos['prueba'], presentada=True)
 
         if not resultados_prueba:
             return Response({'mensaje':'El resultado de la prueba a la que esta accediendo no se ha presentado u asignado'}, status=status.HTTP_400_BAD_REQUEST)
-
-        resultados_prueba_serializer = PruebaEstudianteDetalleSerializer(resultados_prueba)
+        print(resultados_prueba)
+        resultados_prueba_serializer = PruebaEstudianteSerializer(resultados_prueba)
         return Response(resultados_prueba_serializer.data, status=status.HTTP_200_OK)
+        # return Response(status=status.HTTP_200_OK)
 
 class PresentarPruebaEstudianteViewSet(viewsets.ViewSet):
     model = HojaRespuesta
@@ -194,8 +195,7 @@ class PresentarPruebaEstudianteViewSet(viewsets.ViewSet):
                     opcion_marcada = hoja_respuesta_serializer.validated_data['opcion_marcada'],
                     estudiante = hoja_respuesta_serializer.validated_data['estudiante'],
                     tiempo_empleado_pregunta = hoja_respuesta_serializer.validated_data['tiempo_empleado_pregunta'],
-                    calificada = True,
-                    nota = hoja_respuesta_serializer.validated_data['nota'],
+                    calificacion = hoja_respuesta_serializer.validated_data['calificacion'],
                 )
                 respuestas_validas.append(respuesta_valida)
 
@@ -205,7 +205,7 @@ class PresentarPruebaEstudianteViewSet(viewsets.ViewSet):
 
                 tiempo_empleado += segundos_pregunta.total_seconds()
 
-                if hoja_respuesta['nota'] == True:
+                if hoja_respuesta['calificacion'] == True:
                      numero_aciertos += 1
                      calificacion_final += hoja_respuesta['valor_pregunta']
                 else:
