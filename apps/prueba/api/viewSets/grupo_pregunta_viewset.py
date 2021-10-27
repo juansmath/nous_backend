@@ -105,16 +105,19 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             'justificacion': justificacion_serializer
         }
 
-    def crear_pregunta(self, pregunta={}, justificacion=None):
+    def crear_pregunta(self, pregunta={}, justificacion=None, docente=None):
         validar_errores = False
         errores_pregunta = []
         pregunta_valida = {}
 
         pregunta_serializer = PreguntaSerializer(data=pregunta)
         if pregunta_serializer.is_valid():
+            if docente != None:
+                docente = Docente.objects.get(id=pregunta_serializer.validated_data['docente_id'], estado=True)
+
             pregunta = Pregunta(
                 grupo = None,
-                docente = Docente.objects.get(id=pregunta_serializer.validated_data['docente_id'], estado=True),
+                docente = docente,
                 respuesta = OpcionesLetras.objects.get(id=pregunta_serializer.validated_data['respuesta_id'], estado=True),
                 justificacion = justificacion,
                 banco_preguntas = BancoPreguntas.objects.get(id=pregunta_serializer.validated_data['banco_preguntas_id'], estado=True),
@@ -132,7 +135,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             'pregunta_valida': pregunta
         }
 
-    def crear_multiples_preguntas(self,preguntas=[]):
+    def crear_multiples_preguntas(self,preguntas=[], docente=None):
         validar_errores = False
         justificacion = None
         justificaciones_creadas = []
@@ -154,7 +157,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
                 })
 
             #validaciones para la pregunta
-            datos_crear_pregunta = self.crear_pregunta(pregunta['pregunta'], justificacion)
+            datos_crear_pregunta = self.crear_pregunta(pregunta['pregunta'], justificacion, docente)
             if datos_crear_pregunta['validar_errores'] != True:
                 preguntas_validas.append(datos_crear_pregunta['pregunta_valida'])
             else:
@@ -220,11 +223,31 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
     def calcular_valor_pregunta(self, cantidad_preguntas=0, puntaje_maximo=0):
         return puntaje_maximo/(cantidad_preguntas)
 
+    #Asignar el valor a las preguntas nuevas
+    def asignar_valor_preguntas_nuevas(self, preguntas, valor_pregunta, grupo=None):
+        for pregunta in preguntas:
+            pregunta.valor_pregunta = valor_pregunta
+            pregunta.grupo = grupo
+
+        return preguntas
+
+    #Esta función ésta para actualizar preguntas existentes
     def actualizar_valor_preguntas(self, preguntas, valor_pregunta):
         for pregunta in preguntas:
             pregunta.valor_pregunta = valor_pregunta
 
         Pregunta.objects.bulk_update(preguntas, ['valor_pregunta'])
+
+    #Función HashTable para agrupación de las preguntas
+    def agrupar_preguntas_nivel_dificultad(self, preguntas):
+        preguntas_agrupadas = {}
+        for pregunta in preguntas:
+            if pregunta.nivel_dificultad_id in preguntas_agrupadas:
+                preguntas_agrupadas[pregunta.nivel_dificultad_id].append(pregunta)
+            else:
+                preguntas_agrupadas[pregunta.nivel_dificultad_id] = [pregunta]
+
+        return preguntas_agrupadas
 
     def get_queryset(self, pk = None):
         if pk is None:
@@ -249,6 +272,14 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         enunciados_grupo_pregunta = request.data['enunciados_grupo_pregunta']
         preguntas = request.data['preguntas']
 
+        banco_preguntas = BancoPreguntas.objects.filter(id = request.data['banco_preguntas_id'], estado=True).first()
+        if banco_preguntas is None:
+            return Response({'mensaje':'Debe crear o seleccionar un banco de preguntas'}, status=status.HTTP_400_BAD_REQUEST)
+
+        docente = Docente.objects.filter(id=request.data['docente_id'], estado=True).first()
+        if docente is None:
+            return Response({'mensaje':'Debe registrar o seleccionar un docente'}, status=status.HTTP_400_BAD_REQUEST)
+
         grupo_preguntas_serializer = self.serializer_class(data = grupo_preguntas)
 
         if grupo_preguntas_serializer.is_valid():
@@ -263,7 +294,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
         #Preguntas
         if len(preguntas) != 0:
-            datos_preguntas = self.crear_multiples_preguntas(preguntas)
+            datos_preguntas = self.crear_multiples_preguntas(preguntas, docente)
             preguntas_validas = datos_preguntas['preguntas_validas']
             opciones_pregunta_validas = datos_preguntas['opciones_pregunta_validas']
             enunciados_pregunta_validas = datos_preguntas['enunciados_pregunta_validas']
@@ -314,15 +345,16 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
         EnunciadoGrupoPregunta.objects.bulk_create(enunciados_grupo_pregunta_validas)
 
-        #Registro de preguntas
-        for indice, pregunta in enumerate(preguntas_validas):
-            preguntas_registradas = self.obtener_preguntas_registradas(pregunta.banco_preguntas, pregunta.nivel_dificultad)
-            puntaje_maximo = self.obtener_nivel_ejecucion(pregunta.modulo, pregunta.nivel_dificultad)
-            valor_pregunta = self.calcular_valor_pregunta(len(preguntas_registradas)+indice+1, puntaje_maximo)
+        #Agrupamiento de preguntas
+        preguntas_agrupadas = self.agrupar_preguntas_nivel_dificultad(preguntas_validas)
 
-            pregunta.grupo = grupo
-            pregunta.valor_pregunta = valor_pregunta
+        preguntas_validas = []
+        for key in preguntas_agrupadas:
+            preguntas_registradas = self.obtener_preguntas_registradas(banco_preguntas.id, key)
+            puntaje_maximo = self.obtener_nivel_ejecucion(preguntas_agrupadas[key][0].modulo_id, key)
+            valor_pregunta = self.calcular_valor_pregunta(len(preguntas_registradas)+len(preguntas_agrupadas[key]), puntaje_maximo)
 
+            preguntas_validas.extend(self.asignar_valor_preguntas_nuevas(preguntas_agrupadas[key], valor_pregunta, grupo))
             self.actualizar_valor_preguntas(preguntas_registradas, valor_pregunta)
 
         preguntas_creadas = Pregunta.objects.bulk_create(preguntas_validas)
