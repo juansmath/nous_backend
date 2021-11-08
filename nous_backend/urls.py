@@ -12,7 +12,7 @@ schema_view = get_schema_view(
    openapi.Info(
       title="NOUS API RESTFUL DOCUMENTACIÓN",
       default_version='v1',
-      description="EndPoints para cada los modelos involucrados dentro del desarrollo de la API",
+      description="Rutas para cada uno de los módelos involucrados dentro del desarrollo de la API",
       terms_of_service="https://www.google.com/policies/terms/",
       contact=openapi.Contact(email="juansejunior10@gmail.com"),
       license=openapi.License(name="BSD License"),
