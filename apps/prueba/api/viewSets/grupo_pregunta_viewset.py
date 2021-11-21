@@ -239,7 +239,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         Pregunta.objects.bulk_update(preguntas, ['valor_pregunta'])
 
     #Función HashTable para agrupación de las preguntas
-    def agrupar_preguntas_nivel_dificultad(self, preguntas):
+    def agrupar_preguntas_nivel_dificultad(self, preguntas=[]):
         preguntas_agrupadas = {}
         for pregunta in preguntas:
             if pregunta.nivel_dificultad_id in preguntas_agrupadas:
@@ -413,6 +413,14 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         if not datos_grupo_pregunta:
             return Response({'mensaje':'No existe un grupo de preguntas con los datos proporcionados!'}, status = status.HTTP_400_BAD_REQUEST)
 
+        banco_preguntas = BancoPreguntas.objects.filter(id = request.data['banco_preguntas_id'], estado=True).first()
+        if banco_preguntas is None:
+            return Response({'mensaje':'Debe crear o seleccionar un banco de preguntas'}, status=status.HTTP_400_BAD_REQUEST)
+
+        docente = Docente.objects.filter(id=request.data['docente_id'], estado=True).first()
+        if docente is None:
+            return Response({'mensaje':'Debe registrar o seleccionar un docente'}, status=status.HTTP_400_BAD_REQUEST)
+
         grupo_preguntas_serializer = self.serializer_class(datos_grupo_pregunta, data=grupo_preguntas)
 
         if grupo_preguntas_serializer.is_valid() != True:
@@ -568,7 +576,7 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
 
         if validar_errores:
             self.eliminar_justificaciones(justificaciones_creadas)
-            return Response({'error':error, 'mensaje': 'Hubó un error al actualizar el grupo de preguntas!'}, status = status.HTTP_400_BAD_REQUEST)
+            return Response({'error':error, 'mensaje': 'Ocurrió un error al actualizar el grupo de preguntas!'}, status = status.HTTP_400_BAD_REQUEST)
 
         grupo_preguntas_serializer.update(datos_grupo_pregunta, grupo_preguntas)
 
@@ -581,12 +589,27 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         for enunciado_grupo in enunciados_grupo_pregunta_borrar:
             EnunciadoGrupoPregunta.objects.filter(id = enunciado_grupo['id']).delete()
 
+
         # Registro de preguntas
         if len(preguntas_validas) > 0:
             for pregunta in preguntas_validas:
                 pregunta.grupo = datos_grupo_pregunta
 
             preguntas_creadas = Pregunta.objects.bulk_create(preguntas_validas)
+
+        #Agrupamiento de preguntas
+        preguntas_agrupadas = self.agrupar_preguntas_nivel_dificultad(preguntas_validas)
+
+        preguntas_validas = []
+        for key in preguntas_agrupadas:
+            preguntas_registradas = self.obtener_preguntas_registradas(banco_preguntas.id, key)
+            puntaje_maximo = self.obtener_nivel_ejecucion(preguntas_agrupadas[key][0].modulo_id, key)
+            valor_pregunta = self.calcular_valor_pregunta(len(preguntas_registradas)+len(preguntas_agrupadas[key]), puntaje_maximo)
+
+            preguntas_validas.extend(self.asignar_valor_preguntas_nuevas(preguntas_agrupadas[key], valor_pregunta, grupo))
+            self.actualizar_valor_preguntas(preguntas_registradas, valor_pregunta)
+
+        preguntas_creadas = Pregunta.objects.bulk_create(preguntas_validas)
 
         #Registro masivo de enunciados pregunta
         datos_enunciados = []
@@ -618,11 +641,20 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
         OpcionPregunta.objects.bulk_create(datos_opciones)
 
         #Borrado de preguntas
-        for pregunta in preguntas_borrar:
-            datos_pregunta = Pregunta.objects.select_related('justificacion').get(id = pregunta['id'])
-            if datos_pregunta:
-                datos_pregunta.justificacion.delete()
-                datos_pregunta.delete()
+        datos_preguntas_borrar = Pregunta.objects.select_related('justificacion').filter(id__in=[preguntas_borrar])
+        preguntas_agrupadas_actualizar = self.agrupar_preguntas_nivel_dificultad(datos_preguntas_borrar)
+
+        #Actualizar valor de las preguntas restantes en la base de datos
+        for key in preguntas_agrupadas_actualizar:
+            preguntas_registradas = self.obtener_preguntas_registradas(banco_preguntas.id, key)
+            puntaje_maximo = self.obtener_nivel_ejecucion(preguntas_agrupadas_actualizar[key][0].modulo_id, key)
+            valor_pregunta = self.calcular_valor_pregunta(len(preguntas_registradas)-len(preguntas_agrupadas_actualizar[key]), puntaje_maximo)
+
+            self.actualizar_valor_preguntas(preguntas_registradas, valor_pregunta)
+
+        for pregunta in datos_preguntas_borrar:
+            pregunta.justificacion.delete()
+            pregunta.delete()
 
         #Borrado de Enunciados pregunta
         for enunciado in enunciados_pregunta_borrar:
@@ -650,10 +682,20 @@ class GrupoPreguntaViewSet(viewsets.ViewSet):
             return Response({'mensaje', 'No existe un grupo de preguntas con estos datos!'}, status = status.HTTP_400_BAD_REQUEST)
         else:
             preguntas = Pregunta.objects.select_related('justificacion').filter(grupo = kwargs['pk'])
-            print(preguntas)
-            # for pregunta in preguntas:
-            #     Justificacion.objects.filter(id = pregunta.justificacion_id).delete()
-            #     pregunta.delete()
-            # grupo_preguntas.delete()
+            preguntas_agrupadas_actualizar = self.agrupar_preguntas_nivel_dificultad(datos_preguntas_borrar)
+
+            #Actualizar valor de las preguntas restantes en la base de datos
+            for key in preguntas_agrupadas_actualizar:
+                preguntas_registradas = self.obtener_preguntas_registradas(banco_preguntas.id, key)
+                puntaje_maximo = self.obtener_nivel_ejecucion(preguntas_agrupadas_actualizar[key][0].modulo_id, key)
+                valor_pregunta = self.calcular_valor_pregunta(len(preguntas_registradas)-len(preguntas_agrupadas_actualizar[key]), puntaje_maximo)
+
+                self.actualizar_valor_preguntas(preguntas_registradas, valor_pregunta)
+
+            for pregunta in datos_preguntas_borrar:
+                pregunta.justificacion.delete()
+                pregunta.delete()
+
+            grupo_preguntas.delete()
 
             return Response({'mensaje':'El grupo de preguntas ha sido eliminado!'}, status = status.HTTP_200_OK)
